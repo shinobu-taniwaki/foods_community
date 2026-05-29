@@ -31,12 +31,15 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Button>
-              <Link href="/health">システム状態を確認</Link>
+              <Link href="/login">ログイン</Link>
             </Button>
             <Button variant="ghost">
-              <Link href="/manifest.webmanifest">PWA マニフェスト</Link>
+              <Link href="/health">システム状態を確認</Link>
             </Button>
           </div>
+          <p className="text-sm text-foreground/60">
+            アカウントは招待制です。招待メールのリンクからご登録ください。
+          </p>
         </Card>
 
         <Card className="space-y-4">
