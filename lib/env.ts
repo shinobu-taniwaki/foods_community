@@ -48,6 +48,26 @@ export function getPublicEnv(): PublicEnv {
 }
 
 /**
+ * サーバー側（RSC / Server Action / middleware）から Supabase へ接続する URL を返す。
+ *
+ * Docker 等でコンテナ内サーバーとブラウザの到達先が異なる場合に使う:
+ *   - ブラウザ:        NEXT_PUBLIC_SUPABASE_URL（例 http://localhost:54421）
+ *   - コンテナ内サーバー: SUPABASE_INTERNAL_URL（例 http://host.docker.internal:54421）
+ * SUPABASE_INTERNAL_URL が未設定なら公開 URL にフォールバックする。
+ */
+export function getServerSupabaseUrl(): string {
+  const internal = process.env.SUPABASE_INTERNAL_URL?.trim();
+  if (internal) {
+    const parsed = z.string().url().safeParse(internal);
+    if (!parsed.success) {
+      throw new Error('SUPABASE_INTERNAL_URL は有効な URL である必要があります');
+    }
+    return parsed.data;
+  }
+  return getPublicEnv().NEXT_PUBLIC_SUPABASE_URL;
+}
+
+/**
  * サーバー専用の秘匿環境変数を検証して返す。
  * クライアントバンドルに含めないこと（'server-only' 境界で利用）。
  */

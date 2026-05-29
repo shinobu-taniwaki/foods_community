@@ -8,6 +8,8 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
+.env.docker.local
 
 # Node.js / Next.js（将来用）
 node_modules/

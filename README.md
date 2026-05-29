@@ -39,6 +39,37 @@ pnpm dev                   # http://localhost:3000
 > **ポート**: ローカル Supabase は 54421（API）/ 54422（DB）/ 54423（Studio）を使用
 > （既定の 54321 番台は他プロジェクトと競合するため退避。`supabase/config.toml`）。
 
+## ローカルで Docker 動作確認
+
+アプリを Docker コンテナで起動し、CLI 管理のローカル Supabase に接続してブラウザで確認できる
+（オンプレ本番に近い形での確認）。
+
+```bash
+# 1. ローカル Supabase 起動（DB スタック・マイグレーション + seed 自動適用）
+pnpm db:start
+
+# 2. デモアカウント・サンプルお知らせを投入（任意・冪等）
+SUPABASE_SERVICE_ROLE_KEY=$(supabase status -o env | sed -n 's/^SERVICE_ROLE_KEY="\(.*\)"/\1/p') \
+  node scripts/seed-demo.mjs
+
+# 3. Docker 設定を用意（既定のローカルデモキーが入っている）
+cp .env.docker.local.example .env.docker.local
+
+# 4. アプリをコンテナでビルド・起動
+docker compose --env-file .env.docker.local -f docker-compose.local.yml up --build -d
+
+# 5. ブラウザで http://localhost:3000 を開く
+#    デモ会員でログイン: member@mcc.local / Passw0rd123
+#    運営(admin)でログイン: admin@mcc.local / Passw0rd123
+
+# 停止
+docker compose -f docker-compose.local.yml down
+```
+
+> **仕組み**: ブラウザ用 `NEXT_PUBLIC_SUPABASE_URL`（`localhost:54421`）はビルド時に焼き込み、
+> コンテナ内サーバーは `SUPABASE_INTERNAL_URL`（`host.docker.internal:54421`）で Supabase に到達する。
+> コードを変更したら `--build` を付けて再起動する（`NEXT_PUBLIC_*` はビルド時反映のため）。
+
 ## スクリプト
 
 | コマンド | 内容 |

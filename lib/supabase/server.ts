@@ -1,7 +1,7 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { getPublicEnv, getServerEnv } from '@/lib/env';
+import { getPublicEnv, getServerEnv, getServerSupabaseUrl } from '@/lib/env';
 import type { Database } from '@/lib/supabase/types';
 
 type CookieToSet = { name: string; value: string; options: CookieOptions };
@@ -18,7 +18,7 @@ export function createClient() {
   const env = getPublicEnv();
 
   return createServerClient<Database>(
-    env.NEXT_PUBLIC_SUPABASE_URL,
+    getServerSupabaseUrl(),
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
@@ -45,11 +45,10 @@ export function createClient() {
  * 絶対にクライアントへ露出させないこと。
  */
 export function createAdminClient() {
-  const publicEnv = getPublicEnv();
   const serverEnv = getServerEnv();
 
   return createServerClient<Database>(
-    publicEnv.NEXT_PUBLIC_SUPABASE_URL,
+    getServerSupabaseUrl(),
     serverEnv.SUPABASE_SERVICE_ROLE_KEY,
     {
       cookies: {
