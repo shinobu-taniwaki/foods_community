@@ -14,11 +14,16 @@
 
 ## 2. 現在のフェーズ
 
-> **Phase 0 完了 → Phase 1 着手準備**（`.claude/plans/details/dev-phases.md`）
+> **Phase 1 完了 → Phase 2 着手準備**（`.claude/plans/details/dev-phases.md`）
 
 - Phase 0: 環境構築（Next.js + Tailwind + Self-hosted Supabase + マイグレーション基盤）✅
-- Phase 1: 認証・プロフィール・お知らせ（次に着手）
-- Phase 2: 掲示板・タグ・検索
+- Phase 1: 認証・プロフィール・お知らせ ✅
+  - 招待受諾（メール+PW / Google SSO）・ログイン・コールバック・認証ゲート
+  - プロフィール編集（個人/屋号/会社/販売ジャンル）・アカウント設定
+  - お知らせ一覧/詳細/いいね/コメント・admin最小作成・YouTube埋め込み
+  - 画像基盤（圧縮・Storage・マジックバイト検証）
+  - ※未了の小項目: アバター画像アップロードUIの結線、Resend通知/audit_logs記録（Phase 5）、オンボーディングツアー（Phase 5）
+- Phase 2: 掲示板・タグ・検索（次に着手）
 - Phase 3: データ記録・仲間一覧
 - Phase 4: 管理者画面
 - Phase 5: 通知・PWA・最終調整
