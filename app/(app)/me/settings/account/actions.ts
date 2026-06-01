@@ -92,7 +92,10 @@ export async function changeEmail(
     });
   }
   if (parsed.data.newEmail.toLowerCase() === user.email.toLowerCase()) {
-    return err('VALIDATION_FAILED', '現在と異なるメールアドレスを入力してください');
+    return err(
+      'VALIDATION_FAILED',
+      '現在と異なるメールアドレスを入力してください',
+    );
   }
 
   const supabase = createClient();

@@ -70,7 +70,11 @@ export function AcceptForm({ token }: AcceptFormProps) {
             required
           />
           <span>
-            <Link href="/legal/terms" target="_blank" className="text-navy underline">
+            <Link
+              href="/legal/terms"
+              target="_blank"
+              className="text-navy underline"
+            >
               利用規約
             </Link>
             と

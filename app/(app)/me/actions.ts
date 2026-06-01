@@ -146,9 +146,13 @@ export async function updateCompanyProfile(
     const hasUrlError = parsed.error.issues.some(
       (i) => i.message.includes('https') || i.message.includes('URL'),
     );
-    return err(hasUrlError ? 'URL_SCHEME_FORBIDDEN' : 'VALIDATION_FAILED', undefined, {
-      fields: zodFieldErrors(parsed.error),
-    });
+    return err(
+      hasUrlError ? 'URL_SCHEME_FORBIDDEN' : 'VALIDATION_FAILED',
+      undefined,
+      {
+        fields: zodFieldErrors(parsed.error),
+      },
+    );
   }
 
   const social: Record<string, string> = {};
@@ -203,7 +207,10 @@ export async function updateProductGenres(
     }
   }
 
-  await supabase.from('profile_product_genres').delete().eq('profile_id', profile.id);
+  await supabase
+    .from('profile_product_genres')
+    .delete()
+    .eq('profile_id', profile.id);
   if (parsed.data.genreIds.length > 0) {
     const { error } = await supabase.from('profile_product_genres').insert(
       parsed.data.genreIds.map((genre_id) => ({

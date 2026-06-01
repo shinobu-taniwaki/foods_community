@@ -10,7 +10,10 @@ export function AppHeader({ avatar, unreadCount = 0 }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-foreground/10 bg-cream/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-column items-center justify-between px-4">
-        <Link href="/announcements" className="font-serif text-lg text-terracotta">
+        <Link
+          href="/announcements"
+          className="font-serif text-lg text-terracotta"
+        >
           MCC
         </Link>
         <nav className="flex items-center gap-1" aria-label="ヘッダー操作">

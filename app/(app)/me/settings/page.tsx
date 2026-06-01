@@ -10,7 +10,11 @@ export const metadata: Metadata = { title: '設定' };
 
 const ITEMS: { href: string; label: string; ready: boolean }[] = [
   { href: '/me/settings/profile', label: 'プロフィール編集', ready: true },
-  { href: '/me/settings/account', label: 'アカウント（メール・パスワード）', ready: true },
+  {
+    href: '/me/settings/account',
+    label: 'アカウント（メール・パスワード）',
+    ready: true,
+  },
   { href: '/me/settings/notifications', label: '通知設定', ready: false },
   { href: '/me/settings/plan', label: 'プラン', ready: false },
   { href: '/me/settings/danger', label: '退会', ready: false },

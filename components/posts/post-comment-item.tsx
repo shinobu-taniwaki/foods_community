@@ -1,35 +1,26 @@
 'use client';
 
 import { useTransition } from 'react';
-import { deleteAnnouncementComment } from '@/app/(app)/announcements/actions';
+import { deletePostComment } from '@/app/(app)/feed/actions';
 
-interface CommentItemProps {
-  commentId: string;
-  contentId: string;
-  authorName: string;
-  authorAvatar: string;
-  body: string;
-  createdAt: string;
-  canDelete: boolean;
-}
-
-export function CommentItem({
+export function PostCommentItem({
   commentId,
-  contentId,
+  postId,
   authorName,
   authorAvatar,
   body,
   createdAt,
   canDelete,
-}: CommentItemProps) {
+}: {
+  commentId: string;
+  postId: string;
+  authorName: string;
+  authorAvatar: string;
+  body: string;
+  createdAt: string;
+  canDelete: boolean;
+}) {
   const [pending, startTransition] = useTransition();
-
-  const onDelete = () => {
-    if (!confirm('このコメントを削除しますか？')) return;
-    startTransition(async () => {
-      await deleteAnnouncementComment(commentId, contentId);
-    });
-  };
 
   return (
     <li className="flex gap-3 border-b border-foreground/10 py-3 last:border-0">
@@ -49,8 +40,13 @@ export function CommentItem({
         {canDelete && (
           <button
             type="button"
-            onClick={onDelete}
             disabled={pending}
+            onClick={() => {
+              if (!confirm('このコメントを削除しますか？')) return;
+              startTransition(async () => {
+                await deletePostComment(commentId, postId);
+              });
+            }}
             className="mt-1 text-xs text-terracotta underline"
           >
             削除

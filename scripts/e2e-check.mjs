@@ -15,10 +15,12 @@ const check = (cond, msg) => {
 };
 
 const rand = (n) =>
-  Array.from({ length: n }, () =>
-    'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[
-      Math.floor(Math.random() * 62)
-    ],
+  Array.from(
+    { length: n },
+    () =>
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[
+        Math.floor(Math.random() * 62)
+      ],
   ).join('');
 
 const created = { users: [], contents: [] };
@@ -45,7 +47,12 @@ async function main() {
   const adminId = await mkUser(adminEmail, pw);
   await admin
     .from('profiles')
-    .insert({ id: adminId, display_name: '運営テスト', role: 'admin', status: 'active' });
+    .insert({
+      id: adminId,
+      display_name: '運営テスト',
+      role: 'admin',
+      status: 'active',
+    });
 
   // --- 招待作成 → 検証ロジック相当 ---
   const token = rand(64);
@@ -74,7 +81,10 @@ async function main() {
     status: 'active',
   });
   await admin.from('notification_preferences').insert({ user_id: stdId });
-  await admin.from('invitations').update({ accepted_at: new Date().toISOString() }).eq('id', inv.id);
+  await admin
+    .from('invitations')
+    .update({ accepted_at: new Date().toISOString() })
+    .eq('id', inv.id);
 
   const trialId = await mkUser(trialEmail, pw);
   await admin.from('profiles').insert({
@@ -122,7 +132,10 @@ async function main() {
     .from('contents')
     .select('id, required_plan')
     .eq('status', 'published');
-  check(stdView?.length === 2, `standard 会員は2件閲覧可（実際: ${stdView?.length}）`);
+  check(
+    stdView?.length === 2,
+    `standard 会員は2件閲覧可（実際: ${stdView?.length}）`,
+  );
 
   // standard 会員がいいね・コメントできる
   const { error: likeErr } = await stdClient
@@ -136,7 +149,10 @@ async function main() {
 
   // --- RLS: trial 会員は Pro限定が見えない ---
   const trialClient = createClient(URL, anonKey);
-  await trialClient.auth.signInWithPassword({ email: trialEmail, password: pw });
+  await trialClient.auth.signInWithPassword({
+    email: trialEmail,
+    password: pw,
+  });
   const { data: trialView } = await trialClient
     .from('contents')
     .select('id, required_plan')

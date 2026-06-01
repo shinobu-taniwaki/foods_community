@@ -71,7 +71,11 @@ export async function listAnnouncements(params: {
       requiredPlan: row.required_plan,
       publishedAt: row.published_at,
       author: author
-        ? { id: author.id, displayName: author.display_name, avatar: author.avatar }
+        ? {
+            id: author.id,
+            displayName: author.display_name,
+            avatar: author.avatar,
+          }
         : null,
       likeCount: (row.content_likes as CountAgg)[0]?.count ?? 0,
       commentCount: (row.content_comments as CountAgg)[0]?.count ?? 0,

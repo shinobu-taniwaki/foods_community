@@ -5,20 +5,33 @@ import { useFormState } from 'react-dom';
 import { Textarea } from '@/components/ui/textarea';
 import { Alert } from '@/components/ui/alert';
 import { SubmitButton } from '@/components/ui/submit-button';
-import { createAnnouncementComment } from '@/app/(app)/announcements/actions';
+import { createPostComment } from '@/app/(app)/feed/actions';
 
-export function CommentForm({ contentId }: { contentId: string }) {
-  const [state, action] = useFormState(createAnnouncementComment, null);
+export function PostCommentForm({
+  postId,
+  canComment,
+}: {
+  postId: string;
+  canComment: boolean;
+}) {
+  const [state, action] = useFormState(createPostComment, null);
   const formRef = useRef<HTMLFormElement>(null);
 
-  // 投稿成功時にフォームをリセット
   useEffect(() => {
     if (state?.ok) formRef.current?.reset();
   }, [state]);
 
+  if (!canComment) {
+    return (
+      <Alert variant="info">
+        コメントはスタンダードプラン以上でご利用いただけます。
+      </Alert>
+    );
+  }
+
   return (
     <form ref={formRef} action={action} className="space-y-3">
-      <input type="hidden" name="contentId" value={contentId} />
+      <input type="hidden" name="postId" value={postId} />
       {state && !state.ok && (
         <Alert variant="error">{state.error.message}</Alert>
       )}

@@ -21,7 +21,12 @@ export function detectImageType(
   bytes: Uint8Array,
 ): 'jpeg' | 'png' | 'webp' | null {
   // JPEG: FF D8 FF
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+  if (
+    bytes.length >= 3 &&
+    bytes[0] === 0xff &&
+    bytes[1] === 0xd8 &&
+    bytes[2] === 0xff
+  ) {
     return 'jpeg';
   }
   // PNG: 89 50 4E 47

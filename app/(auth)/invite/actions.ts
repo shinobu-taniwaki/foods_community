@@ -9,7 +9,10 @@ import {
   inviteTokenSchema,
   zodFieldErrors,
 } from '@/lib/validation/common';
-import { checkInvitationToken, provisionMemberProfile } from '@/lib/invitations';
+import {
+  checkInvitationToken,
+  provisionMemberProfile,
+} from '@/lib/invitations';
 import { err, type Result } from '@/lib/result';
 
 const acceptSchema = z
@@ -52,7 +55,10 @@ export async function acceptInvitationWithPassword(
     });
   }
 
-  if (parsed.data.agreeToTerms !== 'on' && parsed.data.agreeToTerms !== 'true') {
+  if (
+    parsed.data.agreeToTerms !== 'on' &&
+    parsed.data.agreeToTerms !== 'true'
+  ) {
     return err('TERMS_NOT_AGREED');
   }
 

@@ -22,7 +22,9 @@ export function CreateAnnouncementForm() {
   return (
     <Card>
       <form action={action} className="space-y-4">
-        {state && !state.ok && <Alert variant="error">{state.error.message}</Alert>}
+        {state && !state.ok && (
+          <Alert variant="error">{state.error.message}</Alert>
+        )}
 
         <div>
           <Label htmlFor="category" required>
@@ -53,7 +55,13 @@ export function CreateAnnouncementForm() {
           <Label htmlFor="body" required>
             本文（10,000文字まで）
           </Label>
-          <Textarea id="body" name="body" rows={10} maxLength={10000} required />
+          <Textarea
+            id="body"
+            name="body"
+            rows={10}
+            maxLength={10000}
+            required
+          />
         </div>
 
         <div>
@@ -79,18 +87,33 @@ export function CreateAnnouncementForm() {
         </div>
 
         <label className="flex items-center gap-2 text-base">
-          <input type="checkbox" name="pinned" className="h-5 w-5 accent-terracotta" />
+          <input
+            type="checkbox"
+            name="pinned"
+            className="h-5 w-5 accent-terracotta"
+          />
           ピン留めする
         </label>
 
         <fieldset className="space-y-2">
           <legend className="mb-1 font-medium">公開状態</legend>
           <label className="flex items-center gap-2">
-            <input type="radio" name="status" value="draft" defaultChecked className="accent-terracotta" />
+            <input
+              type="radio"
+              name="status"
+              value="draft"
+              defaultChecked
+              className="accent-terracotta"
+            />
             下書き保存
           </label>
           <label className="flex items-center gap-2">
-            <input type="radio" name="status" value="published" className="accent-terracotta" />
+            <input
+              type="radio"
+              name="status"
+              value="published"
+              className="accent-terracotta"
+            />
             公開する
           </label>
         </fieldset>

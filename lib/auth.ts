@@ -37,9 +37,7 @@ export async function getMyProfile(): Promise<CurrentProfile | null> {
 
   const { data, error } = await supabase
     .from('profiles')
-    .select(
-      '*, profile_product_genres(product_genres(id, label, icon_emoji))',
-    )
+    .select('*, profile_product_genres(product_genres(id, label, icon_emoji))')
     .eq('id', user.id)
     .maybeSingle();
 

@@ -6,7 +6,10 @@ import { Heading } from '@/components/ui/heading';
 import { Card } from '@/components/ui/card';
 import { requireMember } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
-import { ANNOUNCEMENT_CATEGORIES, isAnnouncementCategory } from '@/lib/announcements';
+import {
+  ANNOUNCEMENT_CATEGORIES,
+  isAnnouncementCategory,
+} from '@/lib/announcements';
 import { YoutubeEmbed } from '@/components/youtube-embed';
 import { LikeButton } from '@/components/announcements/like-button';
 import { CommentForm } from '@/components/announcements/comment-form';
@@ -91,7 +94,9 @@ export default async function AnnouncementDetailPage({
 
       <div className="space-y-2">
         {cat && (
-          <span className={`flex items-center gap-1 text-sm font-medium ${cat.color}`}>
+          <span
+            className={`flex items-center gap-1 text-sm font-medium ${cat.color}`}
+          >
             <span aria-hidden>{cat.icon}</span>
             {cat.label}
           </span>
@@ -122,7 +127,11 @@ export default async function AnnouncementDetailPage({
           {attachments.map((a) => {
             if (a.attachment_type === 'video_embed' && a.video_id) {
               return (
-                <YoutubeEmbed key={a.id} videoId={a.video_id} title={content.title} />
+                <YoutubeEmbed
+                  key={a.id}
+                  videoId={a.video_id}
+                  title={content.title}
+                />
               );
             }
             const url = a.storage_path ? signedUrls.get(a.storage_path) : null;

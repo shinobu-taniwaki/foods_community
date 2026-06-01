@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/ui/link-button';
 import { requireMember } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 
@@ -74,9 +74,7 @@ export default async function MyPage() {
             ))}
           </ul>
         )}
-        <Button>
-          <Link href="/me/settings/profile">プロフィールを編集</Link>
-        </Button>
+        <LinkButton href="/me/settings/profile">プロフィールを編集</LinkButton>
       </Card>
 
       {(profile.store_name || profile.region || profile.product) && (

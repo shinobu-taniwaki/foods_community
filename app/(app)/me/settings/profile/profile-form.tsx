@@ -16,7 +16,20 @@ import {
   updateCompanyProfile,
 } from '../../actions';
 
-const AVATAR_CHOICES = ['🍅', '🥬', '🍎', '🌾', '🐟', '🍖', '🥖', '🧀', '🍵', '🍯', '🍶', '🌱'];
+const AVATAR_CHOICES = [
+  '🍅',
+  '🥬',
+  '🍎',
+  '🌾',
+  '🐟',
+  '🍖',
+  '🥖',
+  '🧀',
+  '🍵',
+  '🍯',
+  '🍶',
+  '🌱',
+];
 
 function SectionFeedback({ state }: { state: Result<null> | null }) {
   if (!state) return null;
@@ -25,9 +38,15 @@ function SectionFeedback({ state }: { state: Result<null> | null }) {
 }
 
 export function ProfileForm({ profile }: { profile: ProfileRow }) {
-  const [personalState, personalAction] = useFormState(updatePersonalProfile, null);
+  const [personalState, personalAction] = useFormState(
+    updatePersonalProfile,
+    null,
+  );
   const [storeState, storeAction] = useFormState(updateStoreProfile, null);
-  const [companyState, companyAction] = useFormState(updateCompanyProfile, null);
+  const [companyState, companyAction] = useFormState(
+    updateCompanyProfile,
+    null,
+  );
 
   const social = (profile.social_links ?? {}) as {
     instagram?: string;
@@ -141,35 +160,81 @@ export function ProfileForm({ profile }: { profile: ProfileRow }) {
           <SectionFeedback state={companyState} />
           <div>
             <Label htmlFor="companyName">法人名</Label>
-            <Input id="companyName" name="companyName" defaultValue={profile.company_name ?? ''} maxLength={100} />
+            <Input
+              id="companyName"
+              name="companyName"
+              defaultValue={profile.company_name ?? ''}
+              maxLength={100}
+            />
           </div>
           <div>
             <Label htmlFor="businessType">業態</Label>
-            <Input id="businessType" name="businessType" defaultValue={profile.business_type ?? ''} maxLength={50} placeholder="例: 株式会社 / 個人事業主" />
+            <Input
+              id="businessType"
+              name="businessType"
+              defaultValue={profile.business_type ?? ''}
+              maxLength={50}
+              placeholder="例: 株式会社 / 個人事業主"
+            />
           </div>
           <div>
             <Label htmlFor="companyAddress">住所</Label>
-            <Input id="companyAddress" name="companyAddress" defaultValue={profile.company_address ?? ''} maxLength={200} />
+            <Input
+              id="companyAddress"
+              name="companyAddress"
+              defaultValue={profile.company_address ?? ''}
+              maxLength={200}
+            />
           </div>
           <div>
             <Label htmlFor="companyPhone">電話番号</Label>
-            <Input id="companyPhone" name="companyPhone" type="tel" defaultValue={profile.company_phone ?? ''} maxLength={20} />
+            <Input
+              id="companyPhone"
+              name="companyPhone"
+              type="tel"
+              defaultValue={profile.company_phone ?? ''}
+              maxLength={20}
+            />
           </div>
           <div>
             <Label htmlFor="websiteUrl">公式サイト（https://）</Label>
-            <Input id="websiteUrl" name="websiteUrl" type="url" defaultValue={profile.website_url ?? ''} placeholder="https://example.com" />
+            <Input
+              id="websiteUrl"
+              name="websiteUrl"
+              type="url"
+              defaultValue={profile.website_url ?? ''}
+              placeholder="https://example.com"
+            />
           </div>
           <div>
             <Label htmlFor="instagram">Instagram URL</Label>
-            <Input id="instagram" name="instagram" type="url" defaultValue={social.instagram ?? ''} placeholder="https://instagram.com/..." />
+            <Input
+              id="instagram"
+              name="instagram"
+              type="url"
+              defaultValue={social.instagram ?? ''}
+              placeholder="https://instagram.com/..."
+            />
           </div>
           <div>
             <Label htmlFor="x">X（旧Twitter）URL</Label>
-            <Input id="x" name="x" type="url" defaultValue={social.x ?? ''} placeholder="https://x.com/..." />
+            <Input
+              id="x"
+              name="x"
+              type="url"
+              defaultValue={social.x ?? ''}
+              placeholder="https://x.com/..."
+            />
           </div>
           <div>
             <Label htmlFor="tiktok">TikTok URL</Label>
-            <Input id="tiktok" name="tiktok" type="url" defaultValue={social.tiktok ?? ''} placeholder="https://tiktok.com/@..." />
+            <Input
+              id="tiktok"
+              name="tiktok"
+              type="url"
+              defaultValue={social.tiktok ?? ''}
+              placeholder="https://tiktok.com/@..."
+            />
           </div>
           <SubmitButton>会社情報を保存</SubmitButton>
         </form>

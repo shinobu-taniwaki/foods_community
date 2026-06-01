@@ -25,16 +25,20 @@ const MAX = 5;
 export function GenresField({ allGenres, selectedIds }: GenresFieldProps) {
   const [selected, setSelected] = useState<string[]>(selectedIds);
   const [pending, startTransition] = useTransition();
-  const [message, setMessage] = useState<
-    { type: 'success' | 'error'; text: string } | null
-  >(null);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
 
   const toggle = (id: string) => {
     setMessage(null);
     setSelected((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
       if (prev.length >= MAX) {
-        setMessage({ type: 'error', text: `販売ジャンルは最大${MAX}個までです。` });
+        setMessage({
+          type: 'error',
+          text: `販売ジャンルは最大${MAX}個までです。`,
+        });
         return prev;
       }
       return [...prev, id];
@@ -82,7 +86,9 @@ export function GenresField({ allGenres, selectedIds }: GenresFieldProps) {
           );
         })}
       </div>
-      <p className="text-sm text-foreground/50">{selected.length} / {MAX} 個選択中</p>
+      <p className="text-sm text-foreground/50">
+        {selected.length} / {MAX} 個選択中
+      </p>
       <Button onClick={save} disabled={pending}>
         {pending ? '保存中…' : '販売ジャンルを保存'}
       </Button>

@@ -54,7 +54,11 @@ export default async function InvitePage({
   // 招待情報（プラン名・招待者名）を service_role で取得
   const admin = createAdminClient();
   const [{ data: plan }, { data: inviter }] = await Promise.all([
-    admin.from('plans').select('label').eq('id', check.invitation.plan).maybeSingle(),
+    admin
+      .from('plans')
+      .select('label')
+      .eq('id', check.invitation.plan)
+      .maybeSingle(),
     admin
       .from('profiles')
       .select('display_name')
@@ -78,7 +82,9 @@ export default async function InvitePage({
           </div>
           <div className="flex gap-2">
             <dt className="text-foreground/60">プラン</dt>
-            <dd className="font-medium">{plan?.label ?? check.invitation.plan}</dd>
+            <dd className="font-medium">
+              {plan?.label ?? check.invitation.plan}
+            </dd>
           </div>
         </dl>
       </Card>

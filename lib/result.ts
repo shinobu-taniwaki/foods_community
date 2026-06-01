@@ -38,7 +38,9 @@ export interface ResultError {
   };
 }
 
-export type Result<T> = { ok: true; data: T } | { ok: false; error: ResultError };
+export type Result<T> =
+  | { ok: true; data: T }
+  | { ok: false; error: ResultError };
 
 /** 各エラーコードのユーザー向けデフォルト日本語メッセージ。 */
 const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
@@ -54,7 +56,8 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   EMAIL_MISMATCH: '招待されたメールアドレスと一致しません。',
   OAUTH_FAILED: 'Google での認証に失敗しました。',
   INVALID_CREDENTIALS: 'メールアドレスまたはパスワードが正しくありません。',
-  ACCOUNT_SUSPENDED: 'アカウントは現在停止されています。運営にお問い合わせください。',
+  ACCOUNT_SUSPENDED:
+    'アカウントは現在停止されています。運営にお問い合わせください。',
   ACCOUNT_DELETED: 'このアカウントは退会済みです。',
   SAME_PASSWORD: '現在のパスワードと異なるパスワードを設定してください。',
   URL_SCHEME_FORBIDDEN: 'URL は https:// で始まる必要があります。',

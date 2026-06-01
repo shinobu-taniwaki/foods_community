@@ -11,7 +11,8 @@ const REASON_MESSAGES: Record<string, string> = {
   inactive: 'アカウントが利用できない状態です。運営にお問い合わせください。',
   oauth_failed: 'Google での認証に失敗しました。もう一度お試しください。',
   email_mismatch: '招待されたメールアドレスと一致しませんでした。',
-  no_account: 'アカウントが見つかりませんでした。招待リンクからご登録ください。',
+  no_account:
+    'アカウントが見つかりませんでした。招待リンクからご登録ください。',
   invitation_invalid: '招待リンクが無効か、有効期限が切れています。',
 };
 

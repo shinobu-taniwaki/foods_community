@@ -1,8 +1,7 @@
-import Link from 'next/link';
 import { Container } from '@/components/ui/container';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/ui/link-button';
 
 const BRAND_COLORS = [
   { name: 'クリーム', value: '#faf5ed', className: 'bg-cream' },
@@ -30,12 +29,10 @@ export default function Home() {
             のスキャフォールドが起動しています。
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button>
-              <Link href="/login">ログイン</Link>
-            </Button>
-            <Button variant="ghost">
-              <Link href="/health">システム状態を確認</Link>
-            </Button>
+            <LinkButton href="/login">ログイン</LinkButton>
+            <LinkButton href="/health" variant="ghost">
+              システム状態を確認
+            </LinkButton>
           </div>
           <p className="text-sm text-foreground/60">
             アカウントは招待制です。招待メールのリンクからご登録ください。

@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { ANNOUNCEMENT_CATEGORIES, type AnnouncementListItem } from '@/lib/announcements';
+import {
+  ANNOUNCEMENT_CATEGORIES,
+  type AnnouncementListItem,
+} from '@/lib/announcements';
 
 /** お知らせ一覧のカード。 */
 export function AnnouncementCard({ item }: { item: AnnouncementListItem }) {

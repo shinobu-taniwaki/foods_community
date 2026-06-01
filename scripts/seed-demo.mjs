@@ -21,7 +21,9 @@ const PASSWORD = 'Passw0rd123';
 async function ensureUser(email, profile) {
   // 既存検索（メール一致）
   const { data: list } = await admin.auth.admin.listUsers({ perPage: 1000 });
-  let user = list.users.find((u) => u.email?.toLowerCase() === email.toLowerCase());
+  let user = list.users.find(
+    (u) => u.email?.toLowerCase() === email.toLowerCase(),
+  );
   if (!user) {
     const { data, error } = await admin.auth.admin.createUser({
       email,

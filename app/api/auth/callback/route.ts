@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { checkInvitationToken, provisionMemberProfile } from '@/lib/invitations';
+import {
+  checkInvitationToken,
+  provisionMemberProfile,
+} from '@/lib/invitations';
 
 /**
  * Supabase Auth コールバック（api-endpoints.md §2.3）。
@@ -12,7 +15,8 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code');
   const inviteToken = searchParams.get('invite_token');
 
-  const redirectTo = (path: string) => NextResponse.redirect(`${origin}${path}`);
+  const redirectTo = (path: string) =>
+    NextResponse.redirect(`${origin}${path}`);
 
   if (!code) return redirectTo('/login?error=oauth_failed');
 
@@ -44,8 +48,7 @@ export async function GET(request: NextRequest) {
 
     // 招待メールと Google アカウントのメールが一致するか（厳密・大文字小文字無視）
     const sameEmail =
-      (user.email ?? '').toLowerCase() ===
-      check.invitation.email.toLowerCase();
+      (user.email ?? '').toLowerCase() === check.invitation.email.toLowerCase();
     if (!sameEmail) {
       await supabase.auth.signOut();
       return redirectTo('/login?error=email_mismatch');

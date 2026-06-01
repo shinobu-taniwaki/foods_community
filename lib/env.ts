@@ -60,7 +60,9 @@ export function getServerSupabaseUrl(): string {
   if (internal) {
     const parsed = z.string().url().safeParse(internal);
     if (!parsed.success) {
-      throw new Error('SUPABASE_INTERNAL_URL は有効な URL である必要があります');
+      throw new Error(
+        'SUPABASE_INTERNAL_URL は有効な URL である必要があります',
+      );
     }
     return parsed.data;
   }

@@ -5,4 +5,11 @@
  * スキーマ変更時は以下で再生成する:
  *   pnpm supabase gen types typescript --local > lib/supabase/types.gen.ts
  */
-export type { Database, Json, Tables, TablesInsert, TablesUpdate, Enums } from './types.gen';
+export type {
+  Database,
+  Json,
+  Tables,
+  TablesInsert,
+  TablesUpdate,
+  Enums,
+} from './types.gen';

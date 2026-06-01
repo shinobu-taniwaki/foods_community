@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Heading } from '@/components/ui/heading';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { LinkButton } from '@/components/ui/link-button';
 import { requireMember } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import {
@@ -55,9 +55,7 @@ export default async function AnnouncementsPage({
       <div className="flex items-center justify-between">
         <Heading level={1}>お知らせ</Heading>
         {isAdmin && (
-          <Button>
-            <Link href="/admin/announcements/new">＋ 新規作成</Link>
-          </Button>
+          <LinkButton href="/admin/announcements/new">＋ 新規作成</LinkButton>
         )}
       </div>
 
