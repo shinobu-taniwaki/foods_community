@@ -45,14 +45,12 @@ async function main() {
 
   // --- admin セットアップ ---
   const adminId = await mkUser(adminEmail, pw);
-  await admin
-    .from('profiles')
-    .insert({
-      id: adminId,
-      display_name: '運営テスト',
-      role: 'admin',
-      status: 'active',
-    });
+  await admin.from('profiles').insert({
+    id: adminId,
+    display_name: '運営テスト',
+    role: 'admin',
+    status: 'active',
+  });
 
   // --- 招待作成 → 検証ロジック相当 ---
   const token = rand(64);

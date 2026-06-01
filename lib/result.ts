@@ -27,6 +27,7 @@ export type ErrorCode =
   | 'FILE_TOO_LARGE'
   | 'INVALID_CONTENT_TYPE'
   | 'INVALID_YOUTUBE_URL'
+  | 'DUPLICATE_MONTH'
   | 'INTERNAL';
 
 export interface ResultError {
@@ -68,6 +69,7 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   FILE_TOO_LARGE: 'ファイルサイズが大きすぎます。',
   INVALID_CONTENT_TYPE: '対応していない形式です。',
   INVALID_YOUTUBE_URL: 'YouTube の URL を正しく入力してください。',
+  DUPLICATE_MONTH: 'この月のデータはすでにあります。編集してください。',
   INTERNAL: '予期しないエラーが発生しました。時間をおいてお試しください。',
 };
 
