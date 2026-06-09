@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MCC ロゴマーク">
+  <title>MCC ロゴマーク（テント＋仲間＋実り）</title>
+  <g fill="none">
+    <!-- ground -->
+    <path d="M96 392 Q256 368 416 392" stroke="#5a6b42" stroke-width="11" stroke-linecap="round"/>
+
+    <!-- wheat (left) / 稲穂 -->
+    <g stroke="#d9a43d" stroke-width="6" stroke-linecap="round">
+      <path d="M150 388 Q116 320 122 246" fill="none"/>
+    </g>
+    <g fill="#d9a43d">
+      <ellipse cx="122" cy="240" rx="9" ry="15"/>
+      <ellipse cx="106" cy="262" rx="8" ry="13" transform="rotate(-28 106 262)"/>
+      <ellipse cx="139" cy="262" rx="8" ry="13" transform="rotate(28 139 262)"/>
+      <ellipse cx="111" cy="290" rx="8" ry="13" transform="rotate(-28 111 290)"/>
+      <ellipse cx="140" cy="292" rx="8" ry="13" transform="rotate(28 140 292)"/>
+      <ellipse cx="118" cy="318" rx="8" ry="12" transform="rotate(-26 118 318)"/>
+      <ellipse cx="143" cy="320" rx="8" ry="12" transform="rotate(26 143 320)"/>
+    </g>
+
+    <!-- leaf (right upper) / 葉 -->
+    <path d="M392 232 Q430 250 416 300 Q382 286 392 232 Z" fill="#5a6b42"/>
+    <path d="M398 250 Q404 276 410 290" stroke="#faf5ed" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- tomato (right lower) / トマト -->
+    <circle cx="392" cy="356" r="26" fill="#c05e3f"/>
+    <g fill="#5a6b42">
+      <path d="M392 332 l6 10 11 -4 -7 11 9 6 -12 2 1 12 -8 -9 -8 9 1 -12 -12 -2 9 -6 -7 -11 11 4 Z"/>
+    </g>
+
+    <!-- flag -->
+    <path d="M256 176 V113" stroke="#c05e3f" stroke-width="9" stroke-linecap="round"/>
+    <path d="M256 114 L300 128 L256 142 Z" fill="#c05e3f"/>
+
+    <!-- tent -->
+    <path d="M256 168 L378 384 L134 384 Z" fill="#c05e3f"/>
+    <path d="M190 384 V300 Q190 270 224 268 Q256 266 288 268 Q322 270 322 300 V384 Z" fill="#faf5ed"/>
+
+    <!-- people -->
+    <circle cx="213" cy="336" r="15" fill="#5a6b42"/>
+    <path d="M191 384 Q191 354 213 354 Q235 354 235 384 Z" fill="#5a6b42"/>
+    <circle cx="256" cy="332" r="16" fill="#c05e3f"/>
+    <path d="M232 384 Q232 352 256 352 Q280 352 280 384 Z" fill="#c05e3f"/>
+    <circle cx="299" cy="336" r="15" fill="#d9a43d"/>
+    <path d="M277 384 Q277 354 299 354 Q321 354 321 384 Z" fill="#d9a43d"/>
+  </g>
+</svg>
