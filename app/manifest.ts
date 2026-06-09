@@ -2,7 +2,9 @@ import type { MetadataRoute } from 'next';
 
 /**
  * PWA マニフェスト（設計書 §14.2）
- * アイコン素材は Phase 5 で本番差し替え。
+ * アイコン素材は public/icon-192.png / icon-512.png / icon-maskable.png。
+ * 原本SVGと書き出し手順は public/brand/ と
+ * .claude/plans/details/logo-favicon-brief.md を参照。
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/auth';
+import { AdminNav } from '@/components/layout/admin-nav';
 
 /** 管理者専用レイアウト。requireAdmin で member / 未認証を弾く。 */
 export default async function AdminLayout({
@@ -19,6 +20,7 @@ export default async function AdminLayout({
           </Link>
         </div>
       </header>
+      <AdminNav />
       <main className="mx-auto w-full max-w-column flex-1 px-4 py-5">
         {children}
       </main>

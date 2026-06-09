@@ -28,6 +28,11 @@ export type ErrorCode =
   | 'INVALID_CONTENT_TYPE'
   | 'INVALID_YOUTUBE_URL'
   | 'DUPLICATE_MONTH'
+  | 'SELF_OPERATION_FORBIDDEN'
+  | 'EMAIL_ALREADY_REGISTERED'
+  | 'INVITATION_ALREADY_ACCEPTED'
+  | 'CHANNEL_ID_TAKEN'
+  | 'GENRE_ID_TAKEN'
   | 'INTERNAL';
 
 export interface ResultError {
@@ -70,6 +75,11 @@ const DEFAULT_MESSAGES: Record<ErrorCode, string> = {
   INVALID_CONTENT_TYPE: '対応していない形式です。',
   INVALID_YOUTUBE_URL: 'YouTube の URL を正しく入力してください。',
   DUPLICATE_MONTH: 'この月のデータはすでにあります。編集してください。',
+  SELF_OPERATION_FORBIDDEN: '自分自身に対しては実行できません。',
+  EMAIL_ALREADY_REGISTERED: 'このメールアドレスは既に登録されています。',
+  INVITATION_ALREADY_ACCEPTED: 'この招待は既に受諾済みです。',
+  CHANNEL_ID_TAKEN: 'このチャンネルIDは既に使われています。',
+  GENRE_ID_TAKEN: 'このジャンルIDは既に使われています。',
   INTERNAL: '予期しないエラーが発生しました。時間をおいてお試しください。',
 };
 
