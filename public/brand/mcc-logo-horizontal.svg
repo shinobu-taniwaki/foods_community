@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="460" viewBox="0 0 1360 460" role="img" aria-label="MCC マーケティングCampコミュニティ">
+  <title>MCC ロゴタイプ（横組み）</title>
+  <!-- ロゴマーク -->
+  <g transform="translate(10 -10) scale(0.86)">
+    <image href="mcc-logomark.svg" width="512" height="512"/>
+  </g>
+  <!-- ロゴタイプ: Noto Serif JP 700（Web では next/font で読込。印刷用途はアウトライン化推奨） -->
+  <text x="470" y="300"
+        font-family="'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif"
+        font-weight="700" font-size="248" letter-spacing="6" fill="#c05e3f">MCC</text>
+  <!-- サブタイトル: Zen Kaku Gothic Antique 500 -->
+  <text x="478" y="372"
+        font-family="'Zen Kaku Gothic Antique', 'Hiragino Sans', sans-serif"
+        font-weight="500" font-size="50" letter-spacing="2" fill="#33312e">マーケティングCampコミュニティ</text>
+</svg>

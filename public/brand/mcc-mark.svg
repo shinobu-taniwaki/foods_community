@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MCC マーク">
+  <title>MCC マーク（テント＋仲間）</title>
+  <!-- カラートークン: terracotta #c05e3f / cream #faf5ed / mustard #d9a43d / olive #5a6b42 -->
+  <g id="mark" fill="none">
+    <!-- ground / 地面のなだらかな丘 -->
+    <path d="M118 388 Q256 366 394 388" stroke="#5a6b42" stroke-width="11" stroke-linecap="round"/>
+
+    <!-- flag pole + pennant / 旗 -->
+    <path d="M256 176 V113" stroke="#c05e3f" stroke-width="9" stroke-linecap="round"/>
+    <path d="M256 114 L300 128 L256 142 Z" fill="#c05e3f"/>
+
+    <!-- tent body / テント本体 -->
+    <path d="M256 168 L378 381 L134 381 Z" fill="#c05e3f"/>
+
+    <!-- tent opening / 入口（クリームの土間） -->
+    <path d="M190 381 V300 Q190 270 224 268 Q256 266 288 268 Q322 270 322 300 V381 Z" fill="#faf5ed"/>
+
+    <!-- people / 三人の仲間 -->
+    <!-- left: olive -->
+    <circle cx="213" cy="334" r="15" fill="#5a6b42"/>
+    <path d="M191 381 Q191 351 213 351 Q235 351 235 381 Z" fill="#5a6b42"/>
+    <!-- center: terracotta -->
+    <circle cx="256" cy="330" r="16" fill="#c05e3f"/>
+    <path d="M232 381 Q232 349 256 349 Q280 349 280 381 Z" fill="#c05e3f"/>
+    <!-- right: mustard -->
+    <circle cx="299" cy="334" r="15" fill="#d9a43d"/>
+    <path d="M277 381 Q277 351 299 351 Q321 351 321 381 Z" fill="#d9a43d"/>
+  </g>
+</svg>
