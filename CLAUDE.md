@@ -14,7 +14,7 @@
 
 ## 2. 現在のフェーズ
 
-> **Phase 1 完了 → Phase 2 着手準備**（`.claude/plans/details/dev-phases.md`）
+> **Phase 4 完了 → Phase 5 着手準備**（`.claude/plans/details/dev-phases.md`）
 
 - Phase 0: 環境構築（Next.js + Tailwind + Self-hosted Supabase + マイグレーション基盤）✅
 - Phase 1: 認証・プロフィール・お知らせ ✅
@@ -23,10 +23,11 @@
   - お知らせ一覧/詳細/いいね/コメント・admin最小作成・YouTube埋め込み
   - 画像基盤（圧縮・Storage・マジックバイト検証）
   - ※未了の小項目: アバター画像アップロードUIの結線、Resend通知/audit_logs記録（Phase 5）、オンボーディングツアー（Phase 5）
-- Phase 2: 掲示板・タグ・検索（次に着手）
-- Phase 3: データ記録・仲間一覧
-- Phase 4: 管理者画面
-- Phase 5: 通知・PWA・最終調整
+- Phase 2: 掲示板・タグ・横断検索 ✅
+- Phase 3: データ記録（売上/KPI/CPA）・仲間一覧 ✅
+- Phase 4: 管理者画面一式 ✅
+- Phase 5: 通知（Resend）・PWA・最終調整（次に着手）
+  - ※Phase 1 の未了小項目（アバターUI結線・audit_logs記録・オンボーディングツアー）もここで回収
 
 ## 3. 技術スタック
 
@@ -97,6 +98,7 @@ pnpm db:stop        # 停止
 3. Conventional Commits（`feat:` / `fix:` / `refactor:` / `docs:` / `chore:`）
 4. 実装 → `pnpm lint && pnpm typecheck && pnpm build` → 動作確認 → commit
 5. RLS・招待・プラン境界・画像/URL 検証・generated 列は重要箇所としてテスト記述
+6. **Phase 完了時は §2「現在のフェーズ」を必ず更新**：該当 Phase を ✅ にし、先頭のブロック引用（現在地）と「次に着手」マーカーを次 Phase へ進める
 
 ## 9. やらないこと（MVP スコープ外 = v0.2 以降）
 
