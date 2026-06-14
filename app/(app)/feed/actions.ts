@@ -11,6 +11,12 @@ import { normalizeTagSlug } from '@/lib/tags';
 import { parseYoutubeUrl } from '@/lib/youtube';
 import { zodFieldErrors } from '@/lib/validation/common';
 import { ok, err, type Result } from '@/lib/result';
+import {
+  notifyNewPost,
+  notifyComment,
+  notifyLike,
+  notifyPostModeratedByAdmin,
+} from '@/lib/notifications/dispatch';
 
 const uuid = z.string().uuid();
 
@@ -119,7 +125,15 @@ export async function createPost(
     });
   }
 
-  // TODO(Phase5): 該当チャンネル閲覧可能メンバーへ new_post 通知
+  await notifyNewPost({
+    postId: post.id,
+    postTitle: parsed.data.title,
+    authorId: profile.id,
+    authorName: profile.display_name,
+    channelLabel: channel.label,
+    channelRequiredPlan: channel.requiredPlan,
+  });
+
   revalidatePath('/feed');
   redirect(`/feed/${post.id}`);
 }
@@ -222,7 +236,16 @@ export async function updatePost(
     }
   }
 
-  // TODO(Phase5): admin 編集時に著者へ post_edited_by_admin 通知 + audit_logs
+  if (isAdmin && !isAuthor) {
+    await notifyPostModeratedByAdmin({
+      recipientId: existing.author_id,
+      adminId: profile.id,
+      type: 'post_edited_by_admin',
+      postId: parsed.data.id,
+      postTitle: parsed.data.title,
+    });
+  }
+
   revalidatePath(`/feed/${parsed.data.id}`);
   redirect(`/feed/${parsed.data.id}`);
 }
@@ -235,12 +258,13 @@ export async function deletePost(postId: string): Promise<Result<null>> {
   const supabase = createClient();
   const { data: existing } = await supabase
     .from('posts')
-    .select('author_id')
+    .select('author_id, title')
     .eq('id', postId)
     .is('deleted_at', null)
     .maybeSingle();
   if (!existing) return err('NOT_FOUND');
-  if (existing.author_id !== profile.id && profile.role !== 'admin') {
+  const isAdmin = profile.role === 'admin';
+  if (existing.author_id !== profile.id && !isAdmin) {
     return err('FORBIDDEN');
   }
 
@@ -250,7 +274,16 @@ export async function deletePost(postId: string): Promise<Result<null>> {
     .eq('id', postId);
   if (error) return err('INTERNAL', undefined, { cause: error.message });
 
-  // TODO(Phase5): admin 削除時に著者へ post_deleted_by_admin 通知 + audit_logs
+  if (isAdmin && existing.author_id !== profile.id) {
+    await notifyPostModeratedByAdmin({
+      recipientId: existing.author_id,
+      adminId: profile.id,
+      type: 'post_deleted_by_admin',
+      postId,
+      postTitle: existing.title,
+    });
+  }
+
   revalidatePath('/feed');
   return ok(null);
 }
@@ -281,6 +314,21 @@ export async function togglePostLike(
       .from('post_likes')
       .insert({ post_id: postId, user_id: profile.id });
     if (error) return err('NOT_FOUND');
+
+    const { data: post } = await supabase
+      .from('posts')
+      .select('author_id, title')
+      .eq('id', postId)
+      .maybeSingle();
+    if (post) {
+      await notifyLike({
+        postId,
+        postTitle: post.title,
+        postAuthorId: post.author_id,
+        likerId: profile.id,
+        likerName: profile.display_name,
+      });
+    }
   }
 
   const { count } = await supabase
@@ -327,7 +375,21 @@ export async function createPostComment(
   });
   if (error) return err('NOT_FOUND');
 
-  // TODO(Phase5): 投稿者へ comment_on_my_post 通知
+  const { data: post } = await supabase
+    .from('posts')
+    .select('author_id')
+    .eq('id', parsed.data.postId)
+    .maybeSingle();
+  if (post) {
+    await notifyComment({
+      postId: parsed.data.postId,
+      postAuthorId: post.author_id,
+      commenterId: profile.id,
+      commenterName: profile.display_name,
+      commentBody: parsed.data.body,
+    });
+  }
+
   revalidatePath(`/feed/${parsed.data.postId}`);
   return ok(null);
 }

@@ -8,6 +8,8 @@ import { requireAdmin } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
 import { zodFieldErrors } from '@/lib/validation/common';
 import { ok, err, type Result } from '@/lib/result';
+import { ANNOUNCEMENT_CATEGORIES } from '@/lib/announcements';
+import { notifyNewAnnouncement } from '@/lib/notifications/dispatch';
 
 const uuid = z.string().uuid();
 
@@ -67,7 +69,16 @@ export async function updateAnnouncement(
     .eq('id', parsed.data.id);
   if (error) return err('INTERNAL', undefined, { cause: error.message });
 
-  // TODO(Phase5): draft→published 時に new_announcement 通知配信
+  if (becomingPublished) {
+    await notifyNewAnnouncement({
+      contentId: parsed.data.id,
+      title: parsed.data.title,
+      categoryEmoji: ANNOUNCEMENT_CATEGORIES[parsed.data.category].icon,
+      requiredPlan: parsed.data.requiredPlan,
+      actorId: admin.id,
+    });
+  }
+
   revalidatePath('/admin/announcements');
   revalidatePath('/announcements');
   redirect('/admin/announcements');

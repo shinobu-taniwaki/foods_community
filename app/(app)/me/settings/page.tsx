@@ -15,7 +15,7 @@ const ITEMS: { href: string; label: string; ready: boolean }[] = [
     label: 'アカウント（メール・パスワード）',
     ready: true,
   },
-  { href: '/me/settings/notifications', label: '通知設定', ready: false },
+  { href: '/me/settings/notifications', label: '通知設定', ready: true },
   { href: '/me/settings/plan', label: 'プラン', ready: false },
   { href: '/me/settings/danger', label: '退会', ready: false },
 ];

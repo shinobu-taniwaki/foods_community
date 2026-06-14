@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
+import { notifyAccountStatus } from '@/lib/notifications/dispatch';
 import { ok, err, type Result } from '@/lib/result';
 
 const uuid = z.string().uuid();
@@ -103,7 +104,12 @@ export async function adminSuspendMember(
     targetId: userId,
     payload: { duration: parsed.data.duration, reason: parsed.data.reason ?? '' },
   });
-  // TODO(Phase5): 本人へ account_suspended 通知（メール並走）
+  await notifyAccountStatus({
+    recipientId: userId,
+    type: 'account_suspended',
+    suspendedUntil,
+    reason: parsed.data.reason ?? '',
+  });
   revalidateMember(userId);
   return ok({ suspendedUntil });
 }
@@ -139,7 +145,7 @@ export async function adminRestoreMember(
     targetId: userId,
     payload: { reason: reason ?? '' },
   });
-  // TODO(Phase5): 本人へ account_restored 通知
+  await notifyAccountStatus({ recipientId: userId, type: 'account_restored' });
   revalidateMember(userId);
   return ok(null);
 }
@@ -178,7 +184,7 @@ export async function adminDeleteMember(
     targetId: userId,
     payload: { reason: reason.trim() },
   });
-  // TODO(Phase5): 本人へ account_deleted 通知（メール）
+  await notifyAccountStatus({ recipientId: userId, type: 'account_deleted' });
   revalidateMember(userId);
   return ok(null);
 }
