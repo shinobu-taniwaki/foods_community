@@ -1,0 +1,40 @@
+# ============================================================
+# ローカル動作確認用 Docker 構成
+# Next.js アプリを Docker で起動し、CLI 管理のローカル Supabase
+# （`supabase start`、ポート 54421）へ host.docker.internal 経由で接続する。
+#
+# 使い方:
+#   1) supabase start        # DB スタック起動（マイグレーション + seed 適用）
+#   2) cp .env.docker.local.example .env.docker.local   # 必要なら keys を更新
+#   3) docker compose --env-file .env.docker.local -f docker-compose.local.yml up --build
+#   4) ブラウザで http://localhost:3000
+#
+# ポイント:
+#   - NEXT_PUBLIC_SUPABASE_URL（ブラウザ用）はビルド時に焼き込まれる → localhost:54421
+#   - SUPABASE_INTERNAL_URL（コンテナ内サーバー用）= host.docker.internal:54421
+# ============================================================
+services:
+  app:
+    build:
+      context: .
+      dockerfile: infra/app/Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-http://localhost:54421}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_BETA_MODE: ${NEXT_PUBLIC_BETA_MODE:-true}
+        NEXT_PUBLIC_BETA_END_DATE: ${NEXT_PUBLIC_BETA_END_DATE:-2026-07-31}
+    image: mcc-app:local
+    container_name: mcc-app-local
+    restart: unless-stopped
+    environment:
+      # コンテナ内サーバーからローカル Supabase へ到達する内部 URL
+      SUPABASE_INTERNAL_URL: http://host.docker.internal:54421
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-noreply@example.com}
+      NODE_ENV: production
+    # Linux でも host-gateway で host.docker.internal を解決可能にする（macOS/Win は既定で利用可）
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    ports:
+      - '3000:3000'

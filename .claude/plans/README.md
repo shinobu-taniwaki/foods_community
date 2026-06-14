@@ -23,6 +23,7 @@
     ├── beta-operation.md             … β期間運用マニュアル
     ├── dev-phases.md                 … 開発フェーズ分割計画
     ├── server-investigation.md       … サーバー実態調査依頼文
+    ├── agent-team.md                 … エージェントチーム編成書
     └── legal/                        … 法務文書雛形
         ├── terms.md                  … 利用規約
         ├── privacy.md                … プライバシーポリシー
@@ -52,6 +53,7 @@
 | [details/beta-operation.md](./details/beta-operation.md) | 29KB | β期間チェックリスト・運用フロー | 運用 |
 | [details/dev-phases.md](./details/dev-phases.md) | 44KB | Phase 0〜5、6〜10週間想定 | 開発計画 |
 | [details/server-investigation.md](./details/server-investigation.md) | 29KB | 管理会社問い合わせ文＋自己調査コマンド | インフラ |
+| [details/agent-team.md](./details/agent-team.md) | — | Phase 別エージェント起用シナリオ・並行運用パターン | 開発体制 |
 
 ### 法務雛形
 

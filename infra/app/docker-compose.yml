@@ -1,0 +1,38 @@
+# ============================================================
+# MCC Next.js アプリ（オンプレ単体起動用）
+# Self-hosted Supabase は infra/supabase 側で別途起動し、
+# このアプリはその Kong エンドポイントへ接続する。
+#
+# 使い方:
+#   1) リポジトリ直下に .env.production を配置（.env.production.example 参照）
+#   2) docker compose -f infra/app/docker-compose.yml --env-file .env.production up -d --build
+# ============================================================
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: infra/app/Dockerfile
+      args:
+        # NEXT_PUBLIC_* はビルド時にインライン展開されるため build-arg で渡す
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_BETA_MODE: ${NEXT_PUBLIC_BETA_MODE}
+        NEXT_PUBLIC_BETA_END_DATE: ${NEXT_PUBLIC_BETA_END_DATE}
+        NEXT_PUBLIC_FORM_PLAN_UPGRADE: ${NEXT_PUBLIC_FORM_PLAN_UPGRADE}
+        NEXT_PUBLIC_FORM_WITHDRAWAL: ${NEXT_PUBLIC_FORM_WITHDRAWAL}
+        NEXT_PUBLIC_FORM_INQUIRY: ${NEXT_PUBLIC_FORM_INQUIRY}
+        NEXT_PUBLIC_FORM_BUG_REPORT: ${NEXT_PUBLIC_FORM_BUG_REPORT}
+        NEXT_PUBLIC_FORM_SEMINAR: ${NEXT_PUBLIC_FORM_SEMINAR}
+        NEXT_PUBLIC_PLAUSIBLE_DOMAIN: ${NEXT_PUBLIC_PLAUSIBLE_DOMAIN}
+    image: mcc-app:latest
+    container_name: mcc-app
+    restart: unless-stopped
+    # service_role など秘匿値は runtime の環境変数として渡す
+    environment:
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL}
+      SENTRY_DSN: ${SENTRY_DSN}
+    ports:
+      # Nginx からのみ参照する想定。ローカルバインドに留める
+      - '127.0.0.1:3000:3000'

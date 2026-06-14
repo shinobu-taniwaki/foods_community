@@ -1,0 +1,26 @@
+# Docker ビルドコンテキストから除外（イメージ肥大化・秘匿値混入の防止）
+node_modules
+.next
+out
+dist
+build
+
+# 環境変数（秘匿値はビルド時 build-arg / 実行時 env で渡す）
+.env
+.env.*
+!.env*.example
+
+# Git / CI
+.git
+.github
+
+# Supabase ローカルスタック（CLI 管理。イメージに含めない）
+supabase/.branches
+supabase/.temp
+
+# 開発・設計用
+.claude
+scripts
+coverage
+*.log
+.DS_Store

@@ -1,0 +1,67 @@
+# Supabase ローカル / Self-hosted 設定（MCC MVP）
+# 設計書 §1 技術スタック・§15 デプロイに準拠。
+# 本番のオンプレ Self-hosted は infra/supabase の docker-compose を用いるが、
+# スキーマ・seed・ローカル開発はこの CLI 設定で統一する。
+project_id = "mcc"
+
+[api]
+enabled = true
+# 既定の 54321 は別プロジェクトが使用中のため 54420 番台に退避
+port = 54421
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54422
+shadow_port = 54420
+# 設計書: PostgreSQL 15+
+major_version = 15
+
+[db.pooler]
+enabled = false
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[studio]
+enabled = true
+port = 54423
+
+[inbucket]
+enabled = true
+port = 54424
+
+[analytics]
+# ローカル開発では不要。別プロジェクトとのポート競合も避ける
+enabled = false
+
+[storage]
+enabled = true
+# 投稿画像など。最終的なサイズ制限はアプリ層 + サーバー検証で担保（設計書 §12）
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+# 開発用。本番はオンプレのドメインに差し替える
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+# 設計書 §5.4: モバイル前提で長めのセッション。
+# jwt_expiry はアクセストークン TTL（秒）。長期セッションは refresh token ローテーションで担保。
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+# 設計書 §5.6: メール変更は新旧両方の確認を必須にする
+double_confirm_changes = true
+# ローカル開発では確認メールを無効化（本番は true 推奨）
+enable_confirmations = false
+
+[auth.external.google]
+enabled = false
+client_id = ""
+secret = ""
