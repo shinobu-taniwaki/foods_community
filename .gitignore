@@ -50,3 +50,7 @@ coverage/
 # Misc
 *.tsbuildinfo
 .eslintcache
+
+# ローカル確認用の使い捨てスクリプト（個人認証情報を含むため追跡しない）
+scripts/_seed_login_user.mjs
+scripts/e2e-admin.mjs
