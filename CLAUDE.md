@@ -105,3 +105,5 @@ pnpm db:stop        # 停止
 ランキング / 月次レビュー・表彰 / 称賛 / データ「みんな」表示 / PWA Push /
 Stripe 課金 / 全文検索(FTS) / 通報 / LINE Login / 複数 admin / 物理削除 /
 ダークモード / 多言語化。**過剰な抽象化・先回り実装をしない（YAGNI）**。
+
+> **v0.2 以降の新機能要望**は `.claude/plans/details/backlog-v0.2.md` に集約（study 学習コーナー / 集客施策の診断チャート / プラン内容の確認＋依頼）。MVP 完了後に着手。

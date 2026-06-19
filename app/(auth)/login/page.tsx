@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { Heading } from '@/components/ui/heading';
 import { Alert } from '@/components/ui/alert';
+import { BrandLogo } from '@/components/layout/brand-logo';
 import { getUser } from '@/lib/auth';
 import { LoginForm } from './login-form';
 
@@ -30,6 +31,7 @@ export default async function LoginPage({
 
   return (
     <div className="space-y-6">
+      <BrandLogo width={280} priority className="mx-auto h-auto w-64" />
       <Heading level={1}>ログイン</Heading>
       {notice && <Alert variant="error">{notice}</Alert>}
       <LoginForm />

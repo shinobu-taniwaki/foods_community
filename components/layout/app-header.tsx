@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { BrandLogo } from './brand-logo';
 
 interface AppHeaderProps {
   avatar: string;
@@ -12,9 +13,10 @@ export function AppHeader({ avatar, unreadCount = 0 }: AppHeaderProps) {
       <div className="mx-auto flex h-14 max-w-column items-center justify-between px-4">
         <Link
           href="/announcements"
-          className="font-serif text-lg text-terracotta"
+          aria-label="マーケティングCampコミュニティ ホーム"
+          className="flex items-center"
         >
-          MCC
+          <BrandLogo width={120} priority className="h-8 w-auto" />
         </Link>
         <nav className="flex items-center gap-1" aria-label="ヘッダー操作">
           <Link
