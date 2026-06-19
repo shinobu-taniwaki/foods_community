@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Heading } from '@/components/ui/heading';
+import { BrandLogo } from '@/components/layout/brand-logo';
 import { Card } from '@/components/ui/card';
 import { Alert } from '@/components/ui/alert';
 import { createAdminClient } from '@/lib/supabase/server';
@@ -68,6 +69,7 @@ export default async function InvitePage({
 
   return (
     <div className="space-y-6">
+      <BrandLogo width={280} priority className="mx-auto h-auto w-64" />
       <Heading level={1}>コミュニティへようこそ</Heading>
 
       <Card className="space-y-2">
