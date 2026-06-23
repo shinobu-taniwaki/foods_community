@@ -11,6 +11,9 @@
 .env*.local
 .env.docker.local
 
+# デプロイ用秘匿値（鍵・パスワード生成物）
+.deploy/
+
 # Node.js / Next.js（将来用）
 node_modules/
 .next/

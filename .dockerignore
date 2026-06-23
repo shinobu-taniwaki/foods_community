@@ -10,6 +10,9 @@ build
 .env.*
 !.env*.example
 
+# デプロイ用秘匿値（鍵・パスワード）。絶対にイメージへ含めない
+.deploy
+
 # Git / CI
 .git
 .github
