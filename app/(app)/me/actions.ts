@@ -13,6 +13,7 @@ import {
 import {
   IMAGE_PURPOSES,
   detectImageType,
+  imageProxyPath,
   isImagePurpose,
   isOwnedPath,
 } from '@/lib/storage';
@@ -250,10 +251,8 @@ export async function confirmImageUpload(
     return err('INVALID_FILE_TYPE');
   }
 
-  const { data: signed } = await supabase.storage
-    .from(bucket)
-    .createSignedUrl(storagePath, 60 * 60);
-  return ok({ imageUrl: signed?.signedUrl ?? '' });
+  // 署名URLは使わず、アプリ経由のプロキシパスを返す（単一ドメイン化・署名URL全廃）
+  return ok({ imageUrl: imageProxyPath(bucket, storagePath) });
 }
 
 // ============================================================

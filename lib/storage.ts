@@ -61,3 +61,28 @@ export function isOwnedPath(storagePath: string, userId: string): boolean {
   const segments = storagePath.split('/').filter(Boolean);
   return segments[0] === userId;
 }
+
+// ============================================================
+// 画像配信プロキシ（single-domain-image-proxy.md §3）
+// ブラウザは Supabase に直接アクセスせず、アプリの /api/img 経由で画像を取得する。
+// これにより外部公開ドメインは marketing-camp.jp の1つで済む（api. サブドメイン不要）。
+// ============================================================
+export const IMAGE_BUCKETS = ['avatars', 'stores', 'contents'] as const;
+export type ImageBucket = (typeof IMAGE_BUCKETS)[number];
+
+export function isImageBucket(value: string): value is ImageBucket {
+  return (IMAGE_BUCKETS as readonly string[]).includes(value);
+}
+
+/**
+ * Storage 上の画像をアプリ経由で配信するための内部パスを返す。
+ * Route Handler（app/api/img/[...path]）が受け、RLS 配下で download して返す。
+ * 各セグメントを encodeURIComponent しつつ区切りの "/" は保持する。
+ */
+export function imageProxyPath(
+  bucket: ImageBucket,
+  storagePath: string,
+): string {
+  const encoded = storagePath.split('/').map(encodeURIComponent).join('/');
+  return `/api/img/${bucket}/${encoded}`;
+}

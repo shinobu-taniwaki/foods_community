@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { LinkButton } from '@/components/ui/link-button';
 import { requireMember } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
+import { imageProxyPath } from '@/lib/storage';
 
 export const metadata: Metadata = { title: 'マイページ' };
 
@@ -18,14 +18,9 @@ const PLAN_LABEL: Record<string, string> = {
 export default async function MyPage() {
   const profile = await requireMember();
 
-  let avatarUrl: string | null = null;
-  if (profile.avatar_image_path) {
-    const supabase = createClient();
-    const { data } = await supabase.storage
-      .from('avatars')
-      .createSignedUrl(profile.avatar_image_path, 60 * 60);
-    avatarUrl = data?.signedUrl ?? null;
-  }
+  const avatarUrl = profile.avatar_image_path
+    ? imageProxyPath('avatars', profile.avatar_image_path)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -45,6 +40,7 @@ export default async function MyPage() {
               width={64}
               height={64}
               className="h-16 w-16 rounded-full object-cover"
+              unoptimized
             />
           ) : (
             <span className="flex h-16 w-16 items-center justify-center rounded-full bg-terracotta/10 text-3xl">
