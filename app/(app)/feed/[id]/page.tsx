@@ -6,6 +6,7 @@ import { Heading } from '@/components/ui/heading';
 import { Card } from '@/components/ui/card';
 import { requireMember } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { imageProxyPath } from '@/lib/storage';
 import { isStandardOrHigher } from '@/lib/plans';
 import { YoutubeEmbed } from '@/components/youtube-embed';
 import { PostLikeButton } from '@/components/posts/post-like-button';
@@ -81,20 +82,10 @@ export default async function PostDetailPage({
         .order('created_at', { ascending: true }),
     ]);
 
-  // 画像添付の署名付き URL
+  // 添付を表示順にソート（画像はアプリ経由 /api/img で配信。投稿画像は将来 posts バケットへ）
   const attachments = [...(post.post_attachments ?? [])].sort(
     (a, b) => a.display_order - b.display_order,
   );
-  const signed = new Map<string, string>();
-  for (const a of attachments) {
-    if (a.attachment_type === 'image' && a.storage_path) {
-      const { data } = await supabase.storage
-        .from('contents')
-        .createSignedUrl(a.storage_path, 60 * 60);
-      // 投稿画像は将来 posts バケットへ。Phase 2 では contents を流用しない場合 null。
-      if (data?.signedUrl) signed.set(a.storage_path, data.signedUrl);
-    }
-  }
 
   return (
     <article className="space-y-5">
@@ -142,7 +133,9 @@ export default async function PostDetailPage({
                 />
               );
             }
-            const url = a.storage_path ? signed.get(a.storage_path) : null;
+            const url = a.storage_path
+              ? imageProxyPath('contents', a.storage_path)
+              : null;
             if (!url) return null;
             return (
               <Image

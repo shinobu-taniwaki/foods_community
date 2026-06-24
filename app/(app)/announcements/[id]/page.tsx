@@ -6,6 +6,7 @@ import { Heading } from '@/components/ui/heading';
 import { Card } from '@/components/ui/card';
 import { requireMember } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { imageProxyPath } from '@/lib/storage';
 import {
   ANNOUNCEMENT_CATEGORIES,
   isAnnouncementCategory,
@@ -71,20 +72,10 @@ export default async function AnnouncementDetailPage({
     .is('deleted_at', null)
     .order('created_at', { ascending: true });
 
-  // 画像添付の署名付き URL を生成
+  // 添付を表示順にソート（画像はアプリ経由 /api/img で配信）
   const attachments = [...(content.content_attachments ?? [])].sort(
     (a, b) => a.display_order - b.display_order,
   );
-  const imagePaths = attachments
-    .filter((a) => a.attachment_type === 'image' && a.storage_path)
-    .map((a) => a.storage_path as string);
-  const signedUrls = new Map<string, string>();
-  for (const path of imagePaths) {
-    const { data } = await supabase.storage
-      .from('contents')
-      .createSignedUrl(path, 60 * 60);
-    if (data?.signedUrl) signedUrls.set(path, data.signedUrl);
-  }
 
   return (
     <article className="space-y-5">
@@ -134,7 +125,9 @@ export default async function AnnouncementDetailPage({
                 />
               );
             }
-            const url = a.storage_path ? signedUrls.get(a.storage_path) : null;
+            const url = a.storage_path
+              ? imageProxyPath('contents', a.storage_path)
+              : null;
             if (!url) return null;
             return (
               <figure key={a.id}>

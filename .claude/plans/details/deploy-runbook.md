@@ -25,11 +25,13 @@
 
 - MCC の**ブラウザ用 Supabase クライアント（`lib/supabase/client.ts`）はどこからも import されていない**。
   → 認証・データ取得はすべて Next.js サーバー経由（`server.ts`/`middleware.ts` が `getServerSupabaseUrl()` 利用）。
-- **唯一ブラウザが Supabase を直接叩くのは画像の署名付き URL**（`createSignedUrl`）。
-  署名 URL のホストは**サーバー側 Supabase URL** になるため、そのホストがブラウザからも到達できる必要がある。
-- 結論: サーバーもブラウザも**同一 URL `http://localhost:8100`** を使う。
-  アプリを **host ネットワーク**で起動すると、コンテナの `localhost` = ホストの `localhost:8100`(Kong) になり、
-  サーバー(コンテナ)も同じ URL で到達できる。`HOSTNAME=127.0.0.1` で待受をループバックに限定。
+- ~~唯一ブラウザが Supabase を直接叩くのは画像の署名付き URL~~
+  → **【更新 2026-06-24】単一ドメイン化により署名 URL は廃止**。画像はアプリの `/api/img` 経由で
+  サーバーが download して配信し、ブラウザは Supabase を一切直接叩かない
+  （[single-domain-image-proxy.md](single-domain-image-proxy.md)）。
+- 結論: サーバー(コンテナ)から Kong への内部到達 `http://localhost:8100` だけ確保すればよい。
+  アプリを **host ネットワーク**で起動すると、コンテナの `localhost` = ホストの `localhost:8100`(Kong) になる。
+  `HOSTNAME=127.0.0.1` で待受をループバックに限定。
 
 ### 接続図（「一旦デプロイ」時）
 
@@ -48,12 +50,13 @@
 - 焼き込み: `NEXT_PUBLIC_SUPABASE_URL=http://localhost:8100`、runtime `SUPABASE_INTERNAL_URL=http://localhost:8100`。
 - ANON/SERVICE キーは URL 非依存（JWT_SECRET 署名）。
 
-> **本番（marketing-camp.jp）への移行時:**
-> - `NEXT_PUBLIC_SUPABASE_URL=https://api.marketing-camp.jp` で**アプリを再ビルド**（焼き込みのため）。
-> - 署名付き画像 URL を公開到達可能にするため、サーバーも同 URL を使う
->   （`SUPABASE_INTERNAL_URL=https://api.marketing-camp.jp`。host ネットワーク＋
->   `extra_hosts: api.marketing-camp.jp:127.0.0.1` で nginx 経由のローカル到達にすると効率的）。
-> - これが管理者依頼の `api.marketing-camp.jp`→Kong（[`../../../infra/nginx/ADMIN-HANDOFF.md`](../../../infra/nginx/ADMIN-HANDOFF.md)）が必要な理由。
+> **本番（marketing-camp.jp）への移行時（単一ドメイン化・[single-domain-image-proxy.md](single-domain-image-proxy.md)）:**
+> - **アプリ再ビルドは不要**。ブラウザは Supabase URL を参照しないため、`NEXT_PUBLIC_SUPABASE_URL` の
+>   ドメイン差し替え目的の再ビルドは発生しない（焼き込み値は内部到達先のままでよい）。
+> - 画像は署名付き URL を使わず、アプリの `/api/img` 経由でサーバーが download して配信する。
+>   サーバー→Kong は `SUPABASE_INTERNAL_URL=http://localhost:8100`（内部到達）のまま。
+> - `api.marketing-camp.jp` は**不要**。公開は `marketing-camp.jp`（+www）の1ドメインのみ
+>   （[`../../../infra/nginx/ADMIN-HANDOFF.md`](../../../infra/nginx/ADMIN-HANDOFF.md)）。
 
 ---
 
@@ -380,7 +383,7 @@ docker ps --format '{{.Names}}' | grep k-been | wc -l       # ★9 のまま＝k
 |---|---|
 | DNS（marketing-camp.jp → 27.133.240.132） | 保留・ドメイン管理者が後で設定 |
 | Nginx vhost / SSL | root 必要・管理者へ依頼。設定一式: [`../../../infra/nginx/marketing-camp.jp.conf`](../../../infra/nginx/marketing-camp.jp.conf) ＋ 依頼書 [`ADMIN-HANDOFF.md`](../../../infra/nginx/ADMIN-HANDOFF.md) |
-| 本番 URL でのアプリ**再ビルド**（焼き込み差し替え） | ドメイン確定後 |
+| ~~本番 URL でのアプリ再ビルド~~ → **不要**（単一ドメイン化。ブラウザは Supabase URL 非参照） | 解消 |
 | IP 制限 / VPN（ConoHa で別途進行中） | デプロイ作業のスコープ外 |
 | Swap 拡張 | root 作業・保留 |
 
