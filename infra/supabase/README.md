@@ -12,15 +12,17 @@
 
 ```
 [ブラウザ / PWA]
-   │  https://api.example.com（NEXT_PUBLIC_SUPABASE_URL）
+   │  https://marketing-camp.jp（単一ドメイン）
    ▼
-[Nginx] ── /supabase 系 ──▶ [Kong:8000]（Supabase API ゲートウェイ）
-   │                              ├─ GoTrue（Auth）
-   │                              ├─ PostgREST（DB REST）
-   │                              ├─ Realtime
-   │                              ├─ Storage
-   │                              └─ Postgres 15
-   └── / ──▶ [Next.js:3000]
+[Nginx] ── / ──▶ [Next.js:3000]
+                     │  認証・データ・画像(/api/img)はすべてサーバー経由
+                     ▼
+              [Kong:8000]（外部非公開・アプリ内部からのみ到達）
+                  ├─ GoTrue（Auth）
+                  ├─ PostgREST（DB REST）
+                  ├─ Realtime
+                  ├─ Storage
+                  └─ Postgres 15
 ```
 
 ## 2. セットアップ手順（公式 self-hosting を利用）

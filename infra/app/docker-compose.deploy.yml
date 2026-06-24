@@ -6,13 +6,12 @@
 #   → scp → サーバーで `docker load` → このファイルで起動。
 #   サーバー上でビルドしない（メモリ OOM 回避）。
 #
-# 接続設計（単一 URL・host ネットワーク）:
+# 接続設計（単一ドメイン・画像プロキシ / single-domain-image-proxy.md）:
 #   MCC はブラウザから Supabase へ直接アクセスしない（client.ts 未使用）。
-#   ただし画像の「署名付き URL」はサーバー側 Supabase URL のホストで生成されるため、
-#   そのホストがブラウザからも到達できる必要がある。
-#   → サーバーもブラウザも同じ `http://localhost:8100`（Kong）を使う。
-#   → アプリを host ネットワークで起動し、コンテナの localhost = ホストの localhost に
-#     することで、サーバー(コンテナ)も localhost:8100 で Kong に到達できる。
+#   画像も署名付き URL を使わず、アプリの /api/img 経由でサーバーが download して配信する。
+#   → ブラウザが見るのは marketing-camp.jp だけ。Supabase(Kong) は外部公開不要。
+#   → サーバー(コンテナ)から Kong への内部到達だけ確保すればよい。
+#     host ネットワークで起動し、コンテナの localhost = ホストの localhost:8100(Kong) とする。
 #   → HOSTNAME=127.0.0.1 で待受をループバックに限定（0.0.0.0 公開を防ぐ）。
 #
 # 前提:
@@ -22,22 +21,24 @@
 # 使い方（サーバー /home/hariki/mcc/ で）:
 #   docker compose -f docker-compose.deploy.yml --env-file .env.production up -d
 #
-# ※ 本番（独自ドメイン）では NEXT_PUBLIC_SUPABASE_URL=https://api.marketing-camp.jp で
-#   再ビルドし、SUPABASE_INTERNAL_URL も同 URL（nginx 経由）に合わせる。詳細は deploy-runbook.md。
+# ※ 単一ドメイン化により、ブラウザは Supabase URL を参照しないため
+#   NEXT_PUBLIC_SUPABASE_URL のドメイン確定後の再ビルドは不要。
+#   本番でも SUPABASE_INTERNAL_URL=http://localhost:8100（Kong 内部到達）のまま。
+#   詳細は deploy-runbook.md / single-domain-image-proxy.md。
 # ============================================================
 services:
   app:
     image: ${MCC_APP_IMAGE:-mcc-app:provisional}
     container_name: mcc-app
     restart: unless-stopped
-    # 署名付き画像 URL をブラウザ到達可能にするため host ネットワークで起動。
+    # サーバー(コンテナ)から Kong(localhost:8100) へ内部到達するため host ネットワークで起動。
     # （コンテナの localhost = ホストの localhost:8100 = Kong）
     network_mode: host
     environment:
       # Next standalone をループバックのみで待受（host ネットワークでの 0.0.0.0 公開を防ぐ）
       HOSTNAME: 127.0.0.1
       PORT: '3000'
-      # サーバー(コンテナ)から Supabase への到達先。ブラウザの焼き込み URL と一致させる。
+      # サーバー(コンテナ)から Supabase(Kong) への内部到達先。
       SUPABASE_INTERNAL_URL: ${SUPABASE_INTERNAL_URL:-http://localhost:8100}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
