@@ -1,38 +1,131 @@
 # ============================================================
-# オンプレ デプロイ（雛形 / Phase 5 で完成）
-# main への push 時に SSH 経由でオンプレサーバーへデプロイする。
+# オンプレ自動デプロイ（方式A）
+#   runner でビルド → docker save | gzip → scp → サーバーで docker load → up
 #
-# 必要な GitHub Secrets（設計書 §15.4）:
-#   SSH_HOST / SSH_USER / SSH_KEY（deploy 専用ユーザーの秘密鍵）
-# 注意: SUPABASE_SERVICE_ROLE_KEY は Secrets に置かず、
-#       サーバー上の .env.production に直接配置する。
+# なぜこの形か:
+#   本番サーバーは available メモリが小さく、サーバー上ビルドは OOM 危険
+#   （deploy-runbook.md §0）。そのためビルドは ubuntu-latest runner（amd64）で行い、
+#   サーバーは tar を load して起動するだけにする。
+#
+# 必要な GitHub 設定（Settings → Secrets and variables → Actions）:
+#   Secrets:
+#     SSH_HOST / SSH_USER / SSH_KEY        … deploy 用 SSH 接続情報（鍵は deploy 専用ユーザー）
+#     NEXT_PUBLIC_SUPABASE_ANON_KEY        … ビルド時に焼き込む anon key
+#   Variables(vars):
+#     DEPLOY_ENABLED=true                  … これが true のときだけ実行
+#     NEXT_PUBLIC_SUPABASE_URL=http://localhost:8100
+#         （単一ドメイン化によりブラウザは Supabase を参照しない＝固定で可 / compose 冒頭コメント参照）
+#     NEXT_PUBLIC_BETA_MODE=true
+#     NEXT_PUBLIC_BETA_END_DATE=2026-07-31
+#     NEXT_PUBLIC_FORM_PLAN_UPGRADE / _WITHDRAWAL / _INQUIRY / _BUG_REPORT / _SEMINAR
+#     NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+#
+# 秘匿値の扱い:
+#   SUPABASE_SERVICE_ROLE_KEY 等の実行時秘匿値はサーバーの .env.production に常駐させる。
+#   runner には置かず、イメージにも焼き込まない。
+#
+# 相乗り本番(k-bean)保護:
+#   この compose（docker-compose.deploy.yml）のみを操作する。down 系・全体 prune は実行しない。
 # ============================================================
 name: Deploy (on-premise)
 
 on:
-  workflow_dispatch: # 当面は手動実行のみ。Phase 5 で push トリガーを有効化
+  workflow_dispatch: # 当面は手動実行のみ。安定後に push トリガーを解禁する。
   # push:
   #   branches: [main]
 
+# デプロイの多重実行を防ぐ（前のデプロイを待ってから次を流す）
+concurrency:
+  group: deploy-onpremise
+  cancel-in-progress: false
+
 jobs:
   deploy:
-    name: deploy to on-premise server
+    name: build on runner -> ship to on-premise
     runs-on: ubuntu-latest
-    # Secrets 未設定の段階では実行をスキップ
+    # Secrets/vars 未設定の段階では実行をスキップ
     if: ${{ vars.DEPLOY_ENABLED == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # NEXT_PUBLIC_* はビルド時にバンドルへインライン展開されるため build-arg で渡す（Dockerfile 参照）。
+      - name: Build image (linux/amd64)
+        run: |
+          docker buildx build --platform linux/amd64 \
+            -f infra/app/Dockerfile \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL="${{ vars.NEXT_PUBLIC_SUPABASE_URL }}" \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" \
+            --build-arg NEXT_PUBLIC_BETA_MODE="${{ vars.NEXT_PUBLIC_BETA_MODE }}" \
+            --build-arg NEXT_PUBLIC_BETA_END_DATE="${{ vars.NEXT_PUBLIC_BETA_END_DATE }}" \
+            --build-arg NEXT_PUBLIC_FORM_PLAN_UPGRADE="${{ vars.NEXT_PUBLIC_FORM_PLAN_UPGRADE }}" \
+            --build-arg NEXT_PUBLIC_FORM_WITHDRAWAL="${{ vars.NEXT_PUBLIC_FORM_WITHDRAWAL }}" \
+            --build-arg NEXT_PUBLIC_FORM_INQUIRY="${{ vars.NEXT_PUBLIC_FORM_INQUIRY }}" \
+            --build-arg NEXT_PUBLIC_FORM_BUG_REPORT="${{ vars.NEXT_PUBLIC_FORM_BUG_REPORT }}" \
+            --build-arg NEXT_PUBLIC_FORM_SEMINAR="${{ vars.NEXT_PUBLIC_FORM_SEMINAR }}" \
+            --build-arg NEXT_PUBLIC_PLAUSIBLE_DOMAIN="${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}" \
+            -t mcc-app:${{ github.sha }} --load .
+
+      - name: Save image (gzip)
+        run: docker save mcc-app:${{ github.sha }} | gzip > mcc-app.tar.gz
+
+      - name: Copy image to server
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          source: mcc-app.tar.gz
+          target: /home/hariki/mcc/deploy
+
+      # compose 変更も追従させるため毎回転送（.env.production はサーバー常駐・転送しない）
+      - name: Copy compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: infra/app/docker-compose.deploy.yml
+          target: /home/hariki/mcc
+          strip_components: 2
+
+      - name: Load & deploy on server
+        uses: appleboy/ssh-action@v1
+        env:
+          GIT_SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: GIT_SHA
           script: |
             set -euo pipefail
-            cd /opt/mcc
-            git pull --ff-only origin main
-            # .env.production はサーバー上に常駐（Git 管理外）
-            docker compose -f infra/app/docker-compose.yml --env-file .env.production up -d --build
+            cd /home/hariki/mcc
+            # .env.production（実行時秘匿値）が常駐していること
+            test -f .env.production
+            # 転送イメージを load
+            gunzip -c deploy/mcc-app.tar.gz | docker load
+            # 現行を previous へ退避（ロールバック用に1世代保持）
+            if docker image inspect mcc-app:current >/dev/null 2>&1; then
+              docker tag mcc-app:current mcc-app:previous
+            fi
+            docker tag "mcc-app:${GIT_SHA}" mcc-app:current
+            # この compose のみ起動（k-bean には触れない）
+            MCC_APP_IMAGE=mcc-app:current \
+              docker compose -f docker-compose.deploy.yml --env-file .env.production up -d
+            sleep 3
+            docker compose -f docker-compose.deploy.yml ps
+            # ヘルス: ループバック 3000 で待受しているか。失敗時は previous へ自動ロールバック
+            if ! ss -tlnp 2>/dev/null | grep -q '127.0.0.1:3000'; then
+              echo 'health check failed: 127.0.0.1:3000 not listening -> rolling back'
+              if docker image inspect mcc-app:previous >/dev/null 2>&1; then
+                MCC_APP_IMAGE=mcc-app:previous \
+                  docker compose -f docker-compose.deploy.yml --env-file .env.production up -d
+              fi
+              exit 1
+            fi
+            # 後片付け（転送 tar 削除・ぶら下がりイメージのみ削除）
+            rm -f deploy/mcc-app.tar.gz
             docker image prune -f
