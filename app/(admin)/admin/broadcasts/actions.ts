@@ -19,13 +19,15 @@ const broadcastSchema = z.object({
 
 export interface BroadcastResult {
   recipients: number;
-  emailsSent: number | null;
+  /** メール並走の対象者数（並走なし/送信不可なら null）。送信自体は非同期。 */
+  emailTargets: number | null;
 }
 
 /**
  * 全体通知の送信（notifications-and-emails.md §1.6 / §2.9）。
- * 全 active member（送信 admin 除く）へ admin_broadcast を配信し、
- * 「メール並走」選択時は M-06 メールも送信。監査ログに記録する。
+ * 全 active member（送信 admin 除く）へ admin_broadcast を配信し、監査ログに記録。
+ * 「メール並走」選択時は M-06 メールをバックグラウンドで順次送信する
+ * （レート制御のため数十秒かかることがあり、応答は待たせない）。
  */
 export async function sendBroadcast(
   _prev: Result<BroadcastResult> | null,
@@ -55,24 +57,10 @@ export async function sendBroadcast(
     return err('INTERNAL', undefined, { cause: getErrorMessage(error) });
   }
 
-  // メール並走（M-06）。送信失敗は sendEmailToMany 内でログ済み・通知自体は成功扱い。
-  let emailsSent: number | null = null;
-  if (parsed.data.emailParallel && isEmailEnabled()) {
-    const appUrl = getSiteOrigin();
-    const targets = await getEmailRecipients(recipientIds);
-    emailsSent = await sendEmailToMany(
-      targets.map((t) =>
-        buildBroadcastEmail({
-          to: t.email,
-          userName: t.displayName,
-          title: parsed.data.title,
-          body: parsed.data.body,
-          appUrl,
-        }),
-      ),
-    );
-  }
+  const shouldSendEmail = parsed.data.emailParallel && isEmailEnabled();
+  const broadcastRefId = crypto.randomUUID();
 
+  // 監査ログは通知 INSERT の直後に記録（メール送信の失敗・切断で失われないように）
   await writeAuditLog({
     actorId: admin.id,
     actionType: 'broadcast_sent',
@@ -80,10 +68,36 @@ export async function sendBroadcast(
     payload: {
       title: parsed.data.title,
       recipients: recipientIds.length,
-      emailParallel: parsed.data.emailParallel,
-      emailsSent,
+      emailParallel: shouldSendEmail,
+      broadcastRefId,
     },
   });
 
-  return ok({ recipients: recipientIds.length, emailsSent });
+  // メール並走（M-06）。fire-and-forget（結果はサーバーログで確認）。
+  let emailTargets: number | null = null;
+  if (shouldSendEmail) {
+    const appUrl = getSiteOrigin();
+    const targets = await getEmailRecipients(recipientIds);
+    emailTargets = targets.length;
+    void sendEmailToMany(
+      targets.map((t) =>
+        buildBroadcastEmail({
+          to: t.email,
+          userName: t.displayName,
+          title: parsed.data.title,
+          body: parsed.data.body,
+          appUrl,
+          refId: broadcastRefId,
+        }),
+      ),
+    ).then((sent) => {
+      console.error('[broadcast] メール並走の送信完了', {
+        broadcastRefId,
+        targets: targets.length,
+        sent,
+      });
+    });
+  }
+
+  return ok({ recipients: recipientIds.length, emailTargets });
 }

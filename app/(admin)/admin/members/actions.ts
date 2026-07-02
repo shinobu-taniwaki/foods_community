@@ -5,7 +5,10 @@ import { z } from 'zod';
 import { createClient, createAdminClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
-import { notifyAccountStatus } from '@/lib/notifications/dispatch';
+import {
+  notifyAccountStatus,
+  notifyPlanChanged,
+} from '@/lib/notifications/dispatch';
 import { ok, err, type Result } from '@/lib/result';
 import { getSiteOrigin } from '@/lib/site';
 import { getFormUrl } from '@/lib/forms';
@@ -62,7 +65,21 @@ export async function adminChangeMemberPlan(
     targetId: userId,
     payload: { before: { plan: before.plan }, after: { plan: newPlan }, reason: reason ?? '' },
   });
-  // TODO(Phase5): 本人へ plan_changed 通知
+
+  // 本人へ plan_changed 通知（表示名はプランマスタから引く）
+  const { data: planRows } = await supabase
+    .from('plans')
+    .select('id, label')
+    .in('id', [before.plan, newPlan].filter(Boolean) as string[]);
+  const labelOf = (id: string | null) =>
+    planRows?.find((p) => p.id === id)?.label ?? id ?? '（プランなし）';
+  await notifyPlanChanged({
+    recipientId: userId,
+    adminId: admin.id,
+    oldPlanLabel: labelOf(before.plan),
+    newPlanLabel: labelOf(newPlan),
+  });
+
   revalidateMember(userId);
   return ok(null);
 }

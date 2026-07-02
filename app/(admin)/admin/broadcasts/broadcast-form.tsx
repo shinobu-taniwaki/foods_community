@@ -35,8 +35,8 @@ export function BroadcastForm({ emailEnabled }: BroadcastFormProps) {
         {state?.ok && (
           <Alert variant="success">
             {state.data.recipients} 名のメンバーに通知を送信しました。
-            {state.data.emailsSent !== null &&
-              ` メールも ${state.data.emailsSent} 名に送信しました。`}
+            {state.data.emailTargets !== null &&
+              ` メールも ${state.data.emailTargets} 名へ順次お届けしています（数分かかることがあります）。`}
           </Alert>
         )}
 
@@ -53,7 +53,7 @@ export function BroadcastForm({ emailEnabled }: BroadcastFormProps) {
           </Label>
           <Textarea id="body" name="body" rows={6} maxLength={500} required />
           <p className="mt-1 text-sm text-foreground/60">
-            通知一覧には先頭の約120文字が表示されます。大切なことは最初に書いてください。
+            メンバーの通知一覧に届き、タップすると全文が読めます。大切なことは最初に書いてください。
           </p>
         </div>
 

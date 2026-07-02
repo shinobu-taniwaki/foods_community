@@ -49,13 +49,15 @@ export async function getEmailRecipients(
     if (data.users.length < 1000) break;
   }
 
-  const { data: profiles } = await admin
-    .from('profiles')
-    .select('id, display_name')
-    .in('id', userIds);
-  const nameById = new Map(
-    (profiles ?? []).map((p) => [p.id, p.display_name] as const),
-  );
+  // .in() の URL 長制限を避けるため 500 件ずつに分割して取得
+  const nameById = new Map<string, string>();
+  for (let i = 0; i < userIds.length; i += 500) {
+    const { data: profiles } = await admin
+      .from('profiles')
+      .select('id, display_name')
+      .in('id', userIds.slice(i, i + 500));
+    for (const p of profiles ?? []) nameById.set(p.id, p.display_name);
+  }
 
   return userIds.flatMap((userId) => {
     const email = emailById.get(userId);

@@ -6,13 +6,11 @@ import { useRef, useState, useTransition } from 'react';
 import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { createClient } from '@/lib/supabase/client';
 import { compressImage } from '@/lib/image-compression';
 import { getErrorMessage } from '@/lib/result';
-import { setAvatarImage, removeAvatarImage } from '../../actions';
+import { uploadAvatarImage, removeAvatarImage } from '../../actions';
 
 interface AvatarUploaderProps {
-  userId: string;
   /** 現在のアバター画像の配信 URL（未設定なら null）。 */
   currentImageUrl: string | null;
   /** 画像未設定時に表示する絵文字アイコン。 */
@@ -21,11 +19,10 @@ interface AvatarUploaderProps {
 
 /**
  * アバター画像のアップロード（dev-phases Phase 1 残項目 / 設計書 §12.3）。
- * 選択 → クライアント圧縮（512px/JPEG）→ Storage アップロード →
- * setAvatarImage でマジックバイト検証・profiles 更新。
+ * 選択 → クライアント圧縮（512px/JPEG）→ FormData で Server Action へ送信。
+ * ブラウザは Supabase に直接アクセスしない（single-domain-image-proxy.md §4）。
  */
 export function AvatarUploader({
-  userId,
   currentImageUrl,
   fallbackEmoji,
 }: AvatarUploaderProps) {
@@ -40,21 +37,10 @@ export function AvatarUploader({
     setIsBusy(true);
     try {
       const compressed = await compressImage(file, 'avatar');
-      const storagePath = `${userId}/avatar-${Date.now()}.jpg`;
+      const formData = new FormData();
+      formData.append('file', compressed);
 
-      const supabase = createClient();
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(storagePath, compressed, {
-          contentType: 'image/jpeg',
-          upsert: false,
-        });
-      if (uploadError) {
-        setError('画像のアップロードに失敗しました。時間をおいてお試しください。');
-        return;
-      }
-
-      const result = await setAvatarImage(storagePath);
+      const result = await uploadAvatarImage(formData);
       if (!result.ok) {
         setError(result.error.message);
         return;

@@ -18,6 +18,8 @@ export function buildBroadcastEmail(params: {
   title: string;
   body: string;
   appUrl: string;
+  /** 重複送信防止用の broadcast 参照 ID（X-Entity-Ref-ID）。 */
+  refId?: string;
 }): EmailMessage {
   const ctaUrl = `${params.appUrl}/notifications`;
   const preheader = params.body
@@ -65,5 +67,6 @@ ${textFooter()}`;
     }),
     text,
     category: 'broadcast',
+    refId: params.refId,
   };
 }

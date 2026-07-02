@@ -24,7 +24,12 @@ function isStandalone(): boolean {
 }
 
 function isIos(): boolean {
-  return /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+  // iPadOS 13+ は UA が Macintosh を名乗るため maxTouchPoints で判定を補う
+  return (
+    /iphone|ipad|ipod/i.test(window.navigator.userAgent) ||
+    (/macintosh/i.test(window.navigator.userAgent) &&
+      window.navigator.maxTouchPoints > 1)
+  );
 }
 
 /**
@@ -75,11 +80,15 @@ export function InstallPrompt() {
 
   async function install() {
     if (!installEvent) return;
-    await installEvent.prompt();
-    const { outcome } = await installEvent.userChoice;
-    if (outcome === 'accepted') {
-      dismiss();
+    try {
+      await installEvent.prompt();
+      await installEvent.userChoice;
+    } catch {
+      // prompt() は 1 イベントにつき 1 回のみ。2回目以降の呼び出しは無視。
     }
+    // 受諾・拒否どちらでも同じイベントは再利用できないため案内を閉じる
+    setInstallEvent(null);
+    dismiss();
   }
 
   return (

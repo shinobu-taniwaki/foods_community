@@ -69,7 +69,6 @@ export function ProfileForm({ profile, avatarImageUrl }: ProfileFormProps) {
           <Heading level={3}>個人</Heading>
           <SectionFeedback state={personalState} />
           <AvatarUploader
-            userId={profile.id}
             currentImageUrl={avatarImageUrl}
             fallbackEmoji={profile.avatar}
           />

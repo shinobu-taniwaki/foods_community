@@ -26,6 +26,9 @@ export type EmailEnv = z.infer<typeof emailEnvSchema>;
 /**
  * メール送信が有効な場合のみ検証済み環境変数を返す。
  * RESEND_API_KEY が空なら null（= メール送信スキップ）。
+ * 部分的な設定ミス（キーはあるが FROM が不正等）も throw せず null を返す。
+ * メールは常に主処理の並走（best-effort）であり、設定不備で
+ * 停止・退会・パスワード変更などの主処理を巻き込んで落とさないため。
  */
 export function getEmailEnv(): EmailEnv | null {
   const apiKey = process.env.RESEND_API_KEY?.trim();
@@ -38,11 +41,10 @@ export function getEmailEnv(): EmailEnv | null {
     RESEND_REPLY_TO: process.env.RESEND_REPLY_TO || undefined,
   });
   if (!parsed.success) {
-    throw new Error(
-      `メール環境変数の検証に失敗しました: ${parsed.error.issues
-        .map((i) => i.message)
-        .join(', ')}`,
-    );
+    console.error('[email] 環境変数が不正なため送信を無効化します', {
+      issues: parsed.error.issues.map((i) => i.message),
+    });
+    return null;
   }
   return parsed.data;
 }

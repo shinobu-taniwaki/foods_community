@@ -4,9 +4,20 @@ import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { requireMember } from '@/lib/auth';
+import { countUnreadNotifications } from '@/lib/notifications/list';
 import { ok, err, type Result } from '@/lib/result';
 
 const uuid = z.string().uuid();
+
+/**
+ * 未読件数を返す（ヘッダーバッジのポーリング用）。
+ * 単一ドメイン構成ではブラウザから Supabase（Realtime/REST）に直接
+ * アクセスできないため、アプリサーバー経由で取得する。
+ */
+export async function fetchUnreadCount(): Promise<Result<{ count: number }>> {
+  await requireMember();
+  return ok({ count: await countUnreadNotifications() });
+}
 
 /** 通知 1 件を既読にする（RLS で本人宛のみ更新可）。 */
 export async function markNotificationRead(id: string): Promise<Result<null>> {

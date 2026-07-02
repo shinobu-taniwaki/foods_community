@@ -14,20 +14,26 @@
 
 ## 2. 現在のフェーズ
 
-> **Phase 4 完了 → Phase 5 着手準備**（`.claude/plans/details/dev-phases.md`）
+> **Phase 5 コード実装完了 → ローンチ準備（外部依存の解消待ち）**（`.claude/plans/details/dev-phases.md`）
 
 - Phase 0: 環境構築（Next.js + Tailwind + Self-hosted Supabase + マイグレーション基盤）✅
-- Phase 1: 認証・プロフィール・お知らせ ✅
-  - 招待受諾（メール+PW / Google SSO）・ログイン・コールバック・認証ゲート
-  - プロフィール編集（個人/屋号/会社/販売ジャンル）・アカウント設定
-  - お知らせ一覧/詳細/いいね/コメント・admin最小作成・YouTube埋め込み
-  - 画像基盤（圧縮・Storage・マジックバイト検証）
-  - ※未了の小項目: アバター画像アップロードUIの結線、Resend通知/audit_logs記録（Phase 5）、オンボーディングツアー（Phase 5）
+- Phase 1: 認証・プロフィール・お知らせ ✅（残項目は Phase 5 で回収済み）
 - Phase 2: 掲示板・タグ・横断検索 ✅
 - Phase 3: データ記録（売上/KPI/CPA）・仲間一覧 ✅
 - Phase 4: 管理者画面一式 ✅
-- Phase 5: 通知（Resend）・PWA・最終調整（次に着手）
-  - ※Phase 1 の未了小項目（アバターUI結線・audit_logs記録・オンボーディングツアー）もここで回収
+- Phase 5: 通知（Resend）・PWA・最終調整 ✅（コード実装完了）
+  - 全体通知（/admin/broadcasts・メール並走可）・Resend メール基盤（lib/email/）
+  - 通知バッジ自動更新（単一ドメイン構成のためサーバー経由ポーリング。Realtime 直結は不採用）
+  - plan_changed 通知・通知/監査の漏れ補完
+  - プラン変更/退会申請ページ・フッター・アバターアップロード結線
+  - PWA インストール誘導・オンボーディングツアー・エラー画面（404/500/圏外）・Plausible
+  - 初期コンテンツ seed（`supabase/seed_initial_content.sql`・admin 作成後に手動実行）
+- **ローンチまでの外部依存（コード外・関係者待ち）**
+  - DNS（marketing-camp.jp → 27.133.240.132）+ SSL 取得（サーバー管理者）
+  - Resend API キー発行 + 送信ドメインの SPF/DKIM（DNS 設定後）
+  - Google フォーム 4〜5 種の実作成 → URL/entry ID を `.env.production` へ（しのぶさん）
+  - 利用規約・プライバシーポリシー・特商法の確定文面（法務確認）
+  - Google SSO 有効化（本番ドメイン確定後）・Plausible/Sentry アカウント
 
 ## 3. 技術スタック
 

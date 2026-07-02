@@ -256,28 +256,47 @@ export async function confirmImageUpload(
 }
 
 // ============================================================
-// アバター画像設定（§3.6）確認 → profiles 更新 → 旧画像削除
+// アバター画像アップロード（§3.6 / single-domain-image-proxy.md §4）
+// ブラウザは Supabase に直接アクセスできない（単一ドメイン構成）ため、
+// 圧縮済み画像を FormData で受け取り、サーバー側で検証して Storage へ置く。
 // ============================================================
-export async function setAvatarImage(
-  storagePath: string,
+export async function uploadAvatarImage(
+  formData: FormData,
 ): Promise<Result<{ imageUrl: string }>> {
   const profile = await requireMember();
-  const confirmed = await confirmImageUpload(storagePath, 'avatar');
-  if (!confirmed.ok) return confirmed;
 
+  const file = formData.get('file');
+  if (!(file instanceof File)) return err('VALIDATION_FAILED');
+  if (file.size > IMAGE_PURPOSES.avatar.maxBytes) return err('FILE_TOO_LARGE');
+
+  // マジックバイト検証（拡張子・Content-Type 偽装対策）
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (detectImageType(bytes) === null) return err('INVALID_FILE_TYPE');
+
+  const storagePath = `${profile.id}/avatar-${Date.now()}.jpg`;
   const supabase = createClient();
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(storagePath, bytes, { contentType: 'image/jpeg', upsert: false });
+  if (uploadError) {
+    return err('INTERNAL', undefined, { cause: uploadError.message });
+  }
+
   const oldPath = profile.avatar_image_path;
   const { error } = await supabase
     .from('profiles')
     .update({ avatar_image_path: storagePath })
     .eq('id', profile.id);
-  if (error) return err('INTERNAL', undefined, { cause: error.message });
+  if (error) {
+    await supabase.storage.from('avatars').remove([storagePath]);
+    return err('INTERNAL', undefined, { cause: error.message });
+  }
 
   if (oldPath && oldPath !== storagePath) {
     await supabase.storage.from('avatars').remove([oldPath]);
   }
   revalidateProfile();
-  return ok(confirmed.data);
+  return ok({ imageUrl: imageProxyPath('avatars', storagePath) });
 }
 
 /** アバター画像を外して絵文字アイコンに戻す。 */
