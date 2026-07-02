@@ -11,6 +11,7 @@ import { normalizeTagSlug } from '@/lib/tags';
 import { parseYoutubeUrl } from '@/lib/youtube';
 import { zodFieldErrors } from '@/lib/validation/common';
 import { ok, err, type Result } from '@/lib/result';
+import { writeAuditLog } from '@/lib/audit';
 import {
   notifyNewPost,
   notifyComment,
@@ -244,6 +245,13 @@ export async function updatePost(
       postId: parsed.data.id,
       postTitle: parsed.data.title,
     });
+    await writeAuditLog({
+      actorId: profile.id,
+      actionType: 'post_edited_by_admin',
+      targetType: 'post',
+      targetId: parsed.data.id,
+      payload: { title: parsed.data.title, authorId: existing.author_id },
+    });
   }
 
   revalidatePath(`/feed/${parsed.data.id}`);
@@ -281,6 +289,13 @@ export async function deletePost(postId: string): Promise<Result<null>> {
       type: 'post_deleted_by_admin',
       postId,
       postTitle: existing.title,
+    });
+    await writeAuditLog({
+      actorId: profile.id,
+      actionType: 'post_deleted_by_admin',
+      targetType: 'post',
+      targetId: postId,
+      payload: { title: existing.title, authorId: existing.author_id },
     });
   }
 

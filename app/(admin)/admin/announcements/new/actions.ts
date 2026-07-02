@@ -7,6 +7,8 @@ import { requireAdmin } from '@/lib/auth';
 import { zodFieldErrors } from '@/lib/validation/common';
 import { parseYoutubeUrl } from '@/lib/youtube';
 import { err, type Result } from '@/lib/result';
+import { ANNOUNCEMENT_CATEGORIES } from '@/lib/announcements';
+import { notifyNewAnnouncement } from '@/lib/notifications/dispatch';
 
 const createSchema = z.object({
   category: z.enum(['important', 'news', 'column', 'seminar']),
@@ -86,6 +88,15 @@ export async function createAnnouncement(
     });
   }
 
-  // TODO(Phase5): status=published 時に全 active member へ new_announcement 通知 + メール
+  if (parsed.data.status === 'published') {
+    await notifyNewAnnouncement({
+      contentId: content.id,
+      title: parsed.data.title,
+      categoryEmoji: ANNOUNCEMENT_CATEGORIES[parsed.data.category].icon,
+      requiredPlan: parsed.data.requiredPlan,
+      actorId: admin.id,
+    });
+  }
+
   redirect('/announcements');
 }
