@@ -43,6 +43,9 @@ export function AppFooter() {
           <Link href="/legal/privacy" className="underline">
             プライバシーポリシー
           </Link>
+          <Link href="/legal/commerce" className="underline">
+            特定商取引法に基づく表記
+          </Link>
         </nav>
         <p className="text-xs text-foreground/40">
           © マーケティングCampコミュニティ
