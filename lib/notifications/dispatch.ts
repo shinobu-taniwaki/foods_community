@@ -203,18 +203,18 @@ export async function notifyLike(params: {
 /**
  * 運営からの全体通知 → 全 active member（送信 admin 除く・OFF 不可）。
  * 全体通知は主処理そのものなので best-effort ではなく、INSERT 失敗を throw で伝える。
- * 戻り値は配信対象者数。
+ * 戻り値は配信した受信者 id 一覧（メール並走の宛先解決に使う）。
  */
 export async function notifyAdminBroadcast(params: {
   title: string;
   body: string;
   adminId: string;
-}): Promise<number> {
+}): Promise<string[]> {
   const recipients = await activeMemberRecipients({
     excludeId: params.adminId,
     minRank: 0,
   });
-  if (recipients.length === 0) return 0;
+  if (recipients.length === 0) return [];
 
   const admin = createAdminClient();
   const { error } = await admin.from('notifications').insert(
@@ -230,7 +230,7 @@ export async function notifyAdminBroadcast(params: {
   if (error) {
     throw new Error(`全体通知の配信に失敗しました: ${error.message}`);
   }
-  return recipients.length;
+  return recipients;
 }
 
 type AccountNotificationType =

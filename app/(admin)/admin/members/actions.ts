@@ -7,6 +7,15 @@ import { requireAdmin } from '@/lib/auth';
 import { writeAuditLog } from '@/lib/audit';
 import { notifyAccountStatus } from '@/lib/notifications/dispatch';
 import { ok, err, type Result } from '@/lib/result';
+import { getSiteOrigin } from '@/lib/site';
+import { getFormUrl } from '@/lib/forms';
+import { sendEmail } from '@/lib/email/send';
+import { getEmailRecipient } from '@/lib/email/recipients';
+import {
+  buildSuspendedEmail,
+  buildDeletedEmail,
+  buildRestoredEmail,
+} from '@/lib/email/templates/account-status';
 
 const uuid = z.string().uuid();
 const reasonSchema = z.string().trim().max(500).optional().or(z.literal(''));
@@ -110,6 +119,20 @@ export async function adminSuspendMember(
     suspendedUntil,
     reason: parsed.data.reason ?? '',
   });
+  // 停止中はログイン不可のためメールが主導線（M-07）
+  const recipient = await getEmailRecipient(userId);
+  if (recipient) {
+    await sendEmail(
+      buildSuspendedEmail({
+        to: recipient.email,
+        userName: recipient.displayName,
+        suspendedUntil,
+        reason: parsed.data.reason ?? '',
+        appUrl: getSiteOrigin(),
+        inquiryUrl: getFormUrl('INQUIRY') ?? undefined,
+      }),
+    );
+  }
   revalidateMember(userId);
   return ok({ suspendedUntil });
 }
@@ -146,6 +169,18 @@ export async function adminRestoreMember(
     payload: { reason: reason ?? '' },
   });
   await notifyAccountStatus({ recipientId: userId, type: 'account_restored' });
+  // 復活を知らせるメール（M-09）
+  const recipient = await getEmailRecipient(userId);
+  if (recipient) {
+    await sendEmail(
+      buildRestoredEmail({
+        to: recipient.email,
+        userName: recipient.displayName,
+        restoredAt: new Date().toISOString(),
+        appUrl: getSiteOrigin(),
+      }),
+    );
+  }
   revalidateMember(userId);
   return ok(null);
 }
@@ -185,6 +220,18 @@ export async function adminDeleteMember(
     payload: { reason: reason.trim() },
   });
   await notifyAccountStatus({ recipientId: userId, type: 'account_deleted' });
+  // 退会後はログイン不可のためメールが主導線（M-08）
+  const recipient = await getEmailRecipient(userId);
+  if (recipient) {
+    await sendEmail(
+      buildDeletedEmail({
+        to: recipient.email,
+        userName: recipient.displayName,
+        deletedAt: new Date().toISOString(),
+        appUrl: getSiteOrigin(),
+      }),
+    );
+  }
   revalidateMember(userId);
   return ok(null);
 }

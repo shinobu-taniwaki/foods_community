@@ -7,7 +7,10 @@ import { adminRevokeInvitation, adminResendInvitation } from './actions';
 export function InviteRowActions({ id }: { id: string }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [link, setLink] = useState<string | null>(null);
+  const [resent, setResent] = useState<{
+    link: string;
+    emailSent: boolean;
+  } | null>(null);
 
   return (
     <div className="flex flex-col items-end gap-1">
@@ -19,7 +22,10 @@ export function InviteRowActions({ id }: { id: string }) {
             startTransition(async () => {
               const r = await adminResendInvitation(id);
               if (r.ok) {
-                setLink(r.data.inviteUrl);
+                setResent({
+                  link: r.data.inviteUrl,
+                  emailSent: r.data.emailSent,
+                });
                 router.refresh();
               } else alert(r.error.message);
             })
@@ -44,8 +50,17 @@ export function InviteRowActions({ id }: { id: string }) {
           取消
         </button>
       </div>
-      {link && (
-        <code className="max-w-full break-all text-xs text-foreground/50">{link}</code>
+      {resent && (
+        <div className="max-w-full text-right">
+          <p className="text-xs text-olive">
+            {resent.emailSent
+              ? 'メールを再送しました。'
+              : 'メール未送信です。リンクを共有してください。'}
+          </p>
+          <code className="max-w-full break-all text-xs text-foreground/50">
+            {resent.link}
+          </code>
+        </div>
       )}
     </div>
   );

@@ -9,8 +9,36 @@ import { getSiteOrigin } from '@/lib/site';
 import { writeAuditLog } from '@/lib/audit';
 import { emailSchema, zodFieldErrors } from '@/lib/validation/common';
 import { ok, err, type Result } from '@/lib/result';
+import { sendEmail } from '@/lib/email/send';
+import { buildInviteEmail } from '@/lib/email/templates/invite';
 
 const INVITE_TTL_DAYS = 7;
+
+/** M-01 招待メールを送信（Resend 未設定・失敗時は false → リンク手動共有に切替）。 */
+async function sendInvitationEmail(params: {
+  email: string;
+  plan: string;
+  inviteUrl: string;
+  expiresAt: string;
+}): Promise<boolean> {
+  const supabase = createClient();
+  const { data: planRow } = await supabase
+    .from('plans')
+    .select('label, display_price')
+    .eq('id', params.plan)
+    .maybeSingle();
+
+  return sendEmail(
+    buildInviteEmail({
+      to: params.email,
+      planLabel: planRow?.label ?? params.plan,
+      planPrice: planRow?.display_price ?? '',
+      inviteUrl: params.inviteUrl,
+      expiresAt: params.expiresAt,
+      appUrl: getSiteOrigin(),
+    }),
+  );
+}
 
 const createSchema = z.object({
   email: emailSchema,
@@ -26,12 +54,12 @@ async function isEmailRegistered(email: string): Promise<boolean> {
 
 /**
  * 招待発行（api-endpoints.md §11.8）。
- * メール送信（Resend）は Phase 5。ここでは招待リンクを返し admin が共有する。
+ * Resend で招待メール（M-01）を送信し、失敗時はリンクを admin が手動共有する。
  */
 export async function adminCreateInvitation(
-  _prev: Result<{ inviteUrl: string; email: string }> | null,
+  _prev: Result<{ inviteUrl: string; email: string; emailSent: boolean }> | null,
   formData: FormData,
-): Promise<Result<{ inviteUrl: string; email: string }>> {
+): Promise<Result<{ inviteUrl: string; email: string; emailSent: boolean }>> {
   const admin = await requireAdmin();
   const parsed = createSchema.safeParse({
     email: formData.get('email'),
@@ -80,12 +108,16 @@ export async function adminCreateInvitation(
     payload: { email: parsed.data.email, plan: parsed.data.plan },
   });
 
-  // TODO(Phase5): Resend で招待メール送信
-  revalidatePath('/admin/invites');
-  return ok({
-    inviteUrl: `${getSiteOrigin()}/invite?token=${token}`,
+  const inviteUrl = `${getSiteOrigin()}/invite?token=${token}`;
+  const emailSent = await sendInvitationEmail({
     email: parsed.data.email,
+    plan: parsed.data.plan,
+    inviteUrl,
+    expiresAt,
   });
+
+  revalidatePath('/admin/invites');
+  return ok({ inviteUrl, email: parsed.data.email, emailSent });
 }
 
 const uuid = z.string().uuid();
@@ -120,17 +152,17 @@ export async function adminRevokeInvitation(id: string): Promise<Result<null>> {
   return ok(null);
 }
 
-/** 招待再送（有効期限を延長。メールは Phase 5）（api-endpoints.md §11.10）。 */
+/** 招待再送（有効期限を延長し、招待メールを再送）（api-endpoints.md §11.10）。 */
 export async function adminResendInvitation(
   id: string,
-): Promise<Result<{ inviteUrl: string }>> {
+): Promise<Result<{ inviteUrl: string; emailSent: boolean }>> {
   const admin = await requireAdmin();
   if (!uuid.safeParse(id).success) return err('NOT_FOUND');
 
   const supabase = createClient();
   const { data: inv } = await supabase
     .from('invitations')
-    .select('token, accepted_at')
+    .select('token, accepted_at, email, plan')
     .eq('id', id)
     .maybeSingle();
   if (!inv) return err('NOT_FOUND');
@@ -149,6 +181,15 @@ export async function adminResendInvitation(
     targetType: 'invitation',
     targetId: id,
   });
+
+  const inviteUrl = `${getSiteOrigin()}/invite?token=${inv.token}`;
+  const emailSent = await sendInvitationEmail({
+    email: inv.email,
+    plan: inv.plan,
+    inviteUrl,
+    expiresAt,
+  });
+
   revalidatePath('/admin/invites');
-  return ok({ inviteUrl: `${getSiteOrigin()}/invite?token=${inv.token}` });
+  return ok({ inviteUrl, emailSent });
 }
