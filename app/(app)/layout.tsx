@@ -4,6 +4,8 @@ import { AppHeader } from '@/components/layout/app-header';
 import { AppFooter } from '@/components/layout/footer';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { BetaBanner } from '@/components/layout/beta-banner';
+import { OnboardingTour } from '@/components/onboarding/onboarding-tour';
+import { InstallPrompt } from '@/components/pwa/install-prompt';
 
 /**
  * 認証後アプリの共通シェル。
@@ -25,9 +27,11 @@ export default async function AppLayout({
         userId={profile.id}
         unreadCount={unreadCount}
       />
+      <InstallPrompt />
       <main className="mx-auto w-full max-w-column flex-1 px-4 py-5">
         {children}
       </main>
+      <OnboardingTour />
       <AppFooter />
       <BottomNav />
     </div>
