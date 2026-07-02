@@ -15,6 +15,7 @@ import {
   updateStoreProfile,
   updateCompanyProfile,
 } from '../../actions';
+import { AvatarUploader } from './avatar-uploader';
 
 const AVATAR_CHOICES = [
   '🍅',
@@ -37,7 +38,13 @@ function SectionFeedback({ state }: { state: Result<null> | null }) {
   return <Alert variant="error">{state.error.message}</Alert>;
 }
 
-export function ProfileForm({ profile }: { profile: ProfileRow }) {
+interface ProfileFormProps {
+  profile: ProfileRow;
+  /** アバター画像の配信 URL（サーバーで imageProxyPath 済み。未設定は null）。 */
+  avatarImageUrl: string | null;
+}
+
+export function ProfileForm({ profile, avatarImageUrl }: ProfileFormProps) {
   const [personalState, personalAction] = useFormState(
     updatePersonalProfile,
     null,
@@ -61,8 +68,13 @@ export function ProfileForm({ profile }: { profile: ProfileRow }) {
         <form action={personalAction} className="space-y-4">
           <Heading level={3}>個人</Heading>
           <SectionFeedback state={personalState} />
+          <AvatarUploader
+            userId={profile.id}
+            currentImageUrl={avatarImageUrl}
+            fallbackEmoji={profile.avatar}
+          />
           <div>
-            <Label required>アイコン</Label>
+            <Label required>アイコン（絵文字）</Label>
             <div className="flex flex-wrap gap-2">
               {AVATAR_CHOICES.map((emoji) => (
                 <label key={emoji} className="cursor-pointer">

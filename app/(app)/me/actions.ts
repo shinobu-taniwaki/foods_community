@@ -280,6 +280,24 @@ export async function setAvatarImage(
   return ok(confirmed.data);
 }
 
+/** アバター画像を外して絵文字アイコンに戻す。 */
+export async function removeAvatarImage(): Promise<Result<null>> {
+  const profile = await requireMember();
+  const oldPath = profile.avatar_image_path;
+  if (!oldPath) return ok(null);
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar_image_path: null })
+    .eq('id', profile.id);
+  if (error) return err('INTERNAL', undefined, { cause: error.message });
+
+  await supabase.storage.from('avatars').remove([oldPath]);
+  revalidateProfile();
+  return ok(null);
+}
+
 // ============================================================
 // ログアウト（§2.6）
 // ============================================================
