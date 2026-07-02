@@ -1,13 +1,15 @@
 import Link from 'next/link';
 import { BrandLogo } from './brand-logo';
+import { NotificationBadge } from './notification-badge';
 
 interface AppHeaderProps {
   avatar: string;
+  userId: string;
   unreadCount?: number;
 }
 
 /** グローバルヘッダー（設計書 §6.3 / screens §1.2）。左:アプリ名 右:検索・通知・プロフ。 */
-export function AppHeader({ avatar, unreadCount = 0 }: AppHeaderProps) {
+export function AppHeader({ avatar, userId, unreadCount = 0 }: AppHeaderProps) {
   return (
     <header className="sticky top-0 z-20 border-b border-foreground/10 bg-cream/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-column items-center justify-between px-4">
@@ -32,11 +34,7 @@ export function AppHeader({ avatar, unreadCount = 0 }: AppHeaderProps) {
             className="relative flex h-11 w-11 items-center justify-center rounded text-xl hover:bg-foreground/5"
           >
             🔔
-            {unreadCount > 0 && (
-              <span className="absolute right-1 top-1 min-w-[18px] rounded-full bg-terracotta px-1 text-center text-xs leading-[18px] text-cream">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
+            <NotificationBadge initialCount={unreadCount} userId={userId} />
           </Link>
           <Link
             href="/me"
