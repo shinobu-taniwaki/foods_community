@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
+import Script from 'next/script';
 import { Noto_Serif_JP, Zen_Kaku_Gothic_Antique } from 'next/font/google';
+import { OfflineBanner } from '@/components/layout/offline-banner';
 import './globals.css';
 
 // 見出し用フォント
@@ -47,9 +49,23 @@ export const viewport: Viewport = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // アクセス解析（Plausible）。ドメイン未設定ならスクリプト自体を入れない（§3.5.11）
+  const plausibleDomain = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN;
+
   return (
     <html lang="ja" className={`${notoSerifJp.variable} ${zenKaku.variable}`}>
-      <body>{children}</body>
+      <body>
+        <OfflineBanner />
+        {children}
+        {plausibleDomain && (
+          <Script
+            defer
+            data-domain={plausibleDomain}
+            src="https://plausible.io/js/script.js"
+            strategy="afterInteractive"
+          />
+        )}
+      </body>
     </html>
   );
 }
