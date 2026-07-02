@@ -29,6 +29,7 @@ interface NotificationRow {
 
 const POST_TITLE_MAX = 60;
 const COMMENT_EXCERPT_MAX = 80;
+const BROADCAST_EXCERPT_MAX = 120;
 
 /** 改行・連続空白を 1 つにまとめ、max 超過分を「…」で省略する。 */
 function excerpt(text: string, max: number): string {
@@ -197,6 +198,39 @@ export async function notifyLike(params: {
       actor_id: params.likerId,
     },
   ]);
+}
+
+/**
+ * 運営からの全体通知 → 全 active member（送信 admin 除く・OFF 不可）。
+ * 全体通知は主処理そのものなので best-effort ではなく、INSERT 失敗を throw で伝える。
+ * 戻り値は配信対象者数。
+ */
+export async function notifyAdminBroadcast(params: {
+  title: string;
+  body: string;
+  adminId: string;
+}): Promise<number> {
+  const recipients = await activeMemberRecipients({
+    excludeId: params.adminId,
+    minRank: 0,
+  });
+  if (recipients.length === 0) return 0;
+
+  const admin = createAdminClient();
+  const { error } = await admin.from('notifications').insert(
+    recipients.map((recipientId) => ({
+      recipient_id: recipientId,
+      type: 'admin_broadcast',
+      title: params.title,
+      body: excerpt(params.body, BROADCAST_EXCERPT_MAX),
+      link_path: '/notifications',
+      actor_id: params.adminId,
+    })),
+  );
+  if (error) {
+    throw new Error(`全体通知の配信に失敗しました: ${error.message}`);
+  }
+  return recipients.length;
 }
 
 type AccountNotificationType =

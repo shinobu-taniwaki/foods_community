@@ -9,6 +9,7 @@ const ITEMS = [
   { href: '/admin/members', label: 'メンバー' },
   { href: '/admin/invites', label: '招待' },
   { href: '/admin/announcements', label: 'お知らせ' },
+  { href: '/admin/broadcasts', label: '全体通知' },
   { href: '/admin/posts', label: '投稿' },
   { href: '/admin/channels', label: 'チャンネル' },
   { href: '/admin/product-genres', label: '販売ジャンル' },
