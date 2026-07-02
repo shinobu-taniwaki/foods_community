@@ -24,9 +24,16 @@ export function getFormUrl(
 ): string | null {
   const base = FORM_URLS[key];
   if (!base) return null;
-  if (!prefill) return base;
 
-  const url = new URL(base);
+  // 環境変数の設定ミス（不正 URL）は「未設定」と同じ扱いにする
+  let url: URL;
+  try {
+    url = new URL(base);
+  } catch {
+    return null;
+  }
+
+  if (!prefill) return url.toString();
   for (const [entryId, value] of Object.entries(prefill)) {
     if (entryId && value) url.searchParams.set(entryId, value);
   }

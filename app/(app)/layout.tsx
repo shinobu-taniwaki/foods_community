@@ -1,6 +1,7 @@
 import { requireMember } from '@/lib/auth';
 import { countUnreadNotifications } from '@/lib/notifications/list';
 import { AppHeader } from '@/components/layout/app-header';
+import { AppFooter } from '@/components/layout/footer';
 import { BottomNav } from '@/components/layout/bottom-nav';
 import { BetaBanner } from '@/components/layout/beta-banner';
 
@@ -27,6 +28,7 @@ export default async function AppLayout({
       <main className="mx-auto w-full max-w-column flex-1 px-4 py-5">
         {children}
       </main>
+      <AppFooter />
       <BottomNav />
     </div>
   );
