@@ -14,8 +14,6 @@ import {
   IMAGE_PURPOSES,
   detectImageType,
   imageProxyPath,
-  isImagePurpose,
-  isOwnedPath,
 } from '@/lib/storage';
 import { ok, err, type Result } from '@/lib/result';
 
@@ -224,35 +222,6 @@ export async function updateProductGenres(
 
   revalidateProfile();
   return ok(null);
-}
-
-// ============================================================
-// 画像アップロード確認（§9.2）マジックバイト検証 → 署名付き read URL
-// ============================================================
-export async function confirmImageUpload(
-  storagePath: string,
-  purpose: string,
-): Promise<Result<{ imageUrl: string }>> {
-  const profile = await requireMember();
-  if (!isImagePurpose(purpose)) return err('VALIDATION_FAILED');
-  if (!isOwnedPath(storagePath, profile.id)) return err('INVALID_FILE_PATH');
-
-  const { bucket } = IMAGE_PURPOSES[purpose];
-  const supabase = createClient();
-
-  const { data: blob, error: dlError } = await supabase.storage
-    .from(bucket)
-    .download(storagePath);
-  if (dlError || !blob) return err('NOT_FOUND');
-
-  const head = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
-  if (detectImageType(head) === null) {
-    await supabase.storage.from(bucket).remove([storagePath]);
-    return err('INVALID_FILE_TYPE');
-  }
-
-  // 署名URLは使わず、アプリ経由のプロキシパスを返す（単一ドメイン化・署名URL全廃）
-  return ok({ imageUrl: imageProxyPath(bucket, storagePath) });
 }
 
 // ============================================================
