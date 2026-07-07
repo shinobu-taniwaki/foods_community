@@ -15,7 +15,8 @@ import {
   detectImageType,
   imageProxyPath,
 } from '@/lib/storage';
-import { ok, err, type Result } from '@/lib/result';
+import { ok, err, getErrorMessage, type Result } from '@/lib/result';
+import { compressImageServer } from '@/lib/image-compression-server';
 
 function revalidateProfile() {
   revalidatePath('/me');
@@ -242,11 +243,24 @@ export async function uploadAvatarImage(
   const bytes = new Uint8Array(await file.arrayBuffer());
   if (detectImageType(bytes) === null) return err('INVALID_FILE_TYPE');
 
+  // サーバー側で必ず再圧縮（リサイズ・容量削減・EXIF除去）
+  let compressed: Uint8Array;
+  try {
+    compressed = await compressImageServer(bytes, 'avatar');
+  } catch (cause: unknown) {
+    return err('INTERNAL', '画像の処理に失敗しました。別の写真でお試しください。', {
+      cause: getErrorMessage(cause),
+    });
+  }
+
   const storagePath = `${profile.id}/avatar-${Date.now()}.jpg`;
   const supabase = createClient();
   const { error: uploadError } = await supabase.storage
     .from('avatars')
-    .upload(storagePath, bytes, { contentType: 'image/jpeg', upsert: false });
+    .upload(storagePath, compressed, {
+      contentType: 'image/jpeg',
+      upsert: false,
+    });
   if (uploadError) {
     return err('INTERNAL', undefined, { cause: uploadError.message });
   }
