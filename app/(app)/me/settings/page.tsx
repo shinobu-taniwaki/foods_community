@@ -16,8 +16,8 @@ const ITEMS: { href: string; label: string; ready: boolean }[] = [
     ready: true,
   },
   { href: '/me/settings/notifications', label: '通知設定', ready: true },
-  { href: '/me/settings/plan', label: 'プラン', ready: false },
-  { href: '/me/settings/danger', label: '退会', ready: false },
+  { href: '/me/settings/plan', label: 'プラン', ready: true },
+  { href: '/me/settings/danger', label: '退会', ready: true },
 ];
 
 export default async function SettingsPage() {

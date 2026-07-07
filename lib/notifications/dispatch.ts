@@ -199,6 +199,41 @@ export async function notifyLike(params: {
   ]);
 }
 
+/**
+ * 運営からの全体通知 → 全 active member（送信 admin 除く・OFF 不可）。
+ * 全体通知は主処理そのものなので best-effort ではなく、INSERT 失敗を throw で伝える。
+ * body は全文を保存する（通知詳細ページが無いため、一覧のその場展開で全文を読む。
+ * フォーム側で 500 文字に制限・DB 制約は 2000 文字）。
+ * 戻り値は配信した受信者 id 一覧（メール並走の宛先解決に使う）。
+ */
+export async function notifyAdminBroadcast(params: {
+  title: string;
+  body: string;
+  adminId: string;
+}): Promise<string[]> {
+  const recipients = await activeMemberRecipients({
+    excludeId: params.adminId,
+    minRank: 0,
+  });
+  if (recipients.length === 0) return [];
+
+  const admin = createAdminClient();
+  const { error } = await admin.from('notifications').insert(
+    recipients.map((recipientId) => ({
+      recipient_id: recipientId,
+      type: 'admin_broadcast',
+      title: params.title,
+      body: params.body,
+      link_path: '/notifications',
+      actor_id: params.adminId,
+    })),
+  );
+  if (error) {
+    throw new Error(`全体通知の配信に失敗しました: ${error.message}`);
+  }
+  return recipients;
+}
+
 type AccountNotificationType =
   | 'account_suspended'
   | 'account_deleted'
@@ -254,6 +289,25 @@ function buildAccountNotification(params: {
         linkPath: '/announcements',
       };
   }
+}
+
+/** プラン変更 → 本人（OFF 不可）（notifications-and-emails.md §1.14）。 */
+export async function notifyPlanChanged(params: {
+  recipientId: string;
+  adminId: string;
+  oldPlanLabel: string;
+  newPlanLabel: string;
+}): Promise<void> {
+  await insertNotifications([
+    {
+      recipient_id: params.recipientId,
+      type: 'plan_changed',
+      title: 'プランが変更されました',
+      body: `${params.oldPlanLabel} から ${params.newPlanLabel} に変更されました。`,
+      link_path: '/me/settings/plan',
+      actor_id: params.adminId,
+    },
+  ]);
 }
 
 type PostModerationType = 'post_edited_by_admin' | 'post_deleted_by_admin';

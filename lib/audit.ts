@@ -1,5 +1,5 @@
 import 'server-only';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 import type { Json } from '@/lib/supabase/types';
 
 export type AuditActionType =
@@ -51,6 +51,29 @@ export async function writeAuditLog(params: {
 }): Promise<void> {
   const supabase = createClient();
   await supabase.from('audit_logs').insert({
+    actor_id: params.actorId,
+    action_type: params.actionType,
+    target_type: params.targetType,
+    target_id: params.targetId ?? null,
+    payload: params.payload ?? {},
+  });
+}
+
+/**
+ * システムイベント（member 本人操作など admin 以外が actor のもの）の監査ログ。
+ * RLS の INSERT ポリシーは admin 限定のため service_role で記録する
+ * （rls_policies.sql の audit_logs_insert_policy コメント参照）。
+ * こちらも失敗で主処理は止めない。
+ */
+export async function writeSystemAuditLog(params: {
+  actorId: string;
+  actionType: AuditActionType;
+  targetType: AuditTargetType;
+  targetId?: string | null;
+  payload?: Json;
+}): Promise<void> {
+  const admin = createAdminClient();
+  await admin.from('audit_logs').insert({
     actor_id: params.actorId,
     action_type: params.actionType,
     target_type: params.targetType,

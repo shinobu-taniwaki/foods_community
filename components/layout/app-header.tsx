@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BrandLogo } from './brand-logo';
+import { NotificationBadge } from './notification-badge';
 
 interface AppHeaderProps {
   avatar: string;
@@ -32,11 +33,7 @@ export function AppHeader({ avatar, unreadCount = 0 }: AppHeaderProps) {
             className="relative flex h-11 w-11 items-center justify-center rounded text-xl hover:bg-foreground/5"
           >
             🔔
-            {unreadCount > 0 && (
-              <span className="absolute right-1 top-1 min-w-[18px] rounded-full bg-terracotta px-1 text-center text-xs leading-[18px] text-cream">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
+            <NotificationBadge initialCount={unreadCount} />
           </Link>
           <Link
             href="/me"

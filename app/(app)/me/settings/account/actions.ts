@@ -9,6 +9,10 @@ import {
   zodFieldErrors,
 } from '@/lib/validation/common';
 import { ok, err, type Result } from '@/lib/result';
+import { writeSystemAuditLog } from '@/lib/audit';
+import { getSiteOrigin } from '@/lib/site';
+import { sendEmail } from '@/lib/email/send';
+import { buildPasswordChangedEmail } from '@/lib/email/templates/password-changed';
 
 // ============================================================
 // パスワード変更（api-endpoints.md §2.7）
@@ -63,7 +67,26 @@ export async function changePassword(
   });
   if (error) return err('INTERNAL', undefined, { cause: error.message });
 
-  // TODO(Phase5): Resend で「パスワードが変更されました」通知 + audit_logs(password_changed)
+  // 本人のセキュリティ確認用メール（M-03）＋監査ログ（システムイベント扱い）
+  await writeSystemAuditLog({
+    actorId: user.id,
+    actionType: 'password_changed',
+    targetType: 'auth',
+    targetId: user.id,
+  });
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('display_name')
+    .eq('id', user.id)
+    .maybeSingle();
+  await sendEmail(
+    buildPasswordChangedEmail({
+      to: user.email,
+      userName: profile?.display_name ?? 'メンバー',
+      changedAt: new Date().toISOString(),
+      appUrl: getSiteOrigin(),
+    }),
+  );
   return ok(null);
 }
 

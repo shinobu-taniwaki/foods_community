@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -20,6 +20,7 @@ const TYPE_ICON: Record<string, string> = {
   account_restored: '🎉',
   post_edited_by_admin: '✏️',
   post_deleted_by_admin: '🗑️',
+  plan_changed: '💳',
 };
 
 function formatJp(iso: string): string {
@@ -31,15 +32,30 @@ function formatJp(iso: string): string {
   });
 }
 
-/** 通知一覧（クリックで既読化＋遷移、すべて既読ボタン）。 */
+/**
+ * 通知一覧（クリックで既読化＋遷移、すべて既読ボタン）。
+ * 全体通知（admin_broadcast）は専用ページが無いため、タップでその場に全文を展開する。
+ */
 export function NotificationList({ items }: { items: NotificationItem[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const hasUnread = items.some((item) => !item.readAt);
 
   function open(item: NotificationItem) {
     startTransition(async () => {
       if (!item.readAt) await markNotificationRead(item.id);
+      if (item.type === 'admin_broadcast') {
+        // 遷移先が通知一覧自身のため、その場で全文を開閉する
+        setExpandedIds((prev) => {
+          const next = new Set(prev);
+          if (next.has(item.id)) next.delete(item.id);
+          else next.add(item.id);
+          return next;
+        });
+        router.refresh();
+        return;
+      }
       router.push(item.linkPath);
     });
   }
@@ -96,8 +112,22 @@ export function NotificationList({ items }: { items: NotificationItem[] }) {
                   <span className="font-medium">{item.title}</span>
                 </span>
                 {item.body && (
-                  <span className="mt-1 block line-clamp-2 text-sm text-foreground/70">
+                  <span
+                    className={cn(
+                      'mt-1 block text-sm text-foreground/70',
+                      expandedIds.has(item.id)
+                        ? 'whitespace-pre-line'
+                        : 'line-clamp-2',
+                    )}
+                  >
                     {item.body}
+                  </span>
+                )}
+                {item.type === 'admin_broadcast' && (
+                  <span className="mt-1 block text-xs text-navy underline">
+                    {expandedIds.has(item.id)
+                      ? 'たたむ'
+                      : 'タップして全文を読む'}
                   </span>
                 )}
                 <span className="mt-1 block text-xs text-foreground/40">

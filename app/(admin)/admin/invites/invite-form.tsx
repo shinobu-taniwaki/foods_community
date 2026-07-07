@@ -17,12 +17,17 @@ export function InviteForm() {
         {state && !state.ok && <Alert variant="error">{state.error.message}</Alert>}
         {state?.ok && (
           <Alert variant="success">
-            <p className="mb-1">{state.data.email} さんの招待リンクを発行しました。</p>
+            <p className="mb-1">
+              {state.data.email} さんの招待リンクを発行しました。
+              {state.data.emailSent && ' 招待メールを送信済みです。'}
+            </p>
             <code className="block break-all rounded bg-white/60 p-2 text-xs">
               {state.data.inviteUrl}
             </code>
             <p className="mt-1 text-xs">
-              このリンクを本人に共有してください（7日間有効）。
+              {state.data.emailSent
+                ? 'メールが届かない場合は、このリンクを本人に共有してください（7日間有効）。'
+                : 'メールは送信されていません。このリンクを本人に共有してください（7日間有効）。'}
             </p>
           </Alert>
         )}

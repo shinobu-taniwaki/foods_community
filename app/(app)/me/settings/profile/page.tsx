@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Heading } from '@/components/ui/heading';
 import { requireMember } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
+import { imageProxyPath } from '@/lib/storage';
 import { ProfileForm } from './profile-form';
 import { GenresField } from './genres-field';
 
@@ -33,7 +34,14 @@ export default async function ProfileEditPage() {
         </Link>
       </div>
 
-      <ProfileForm profile={profile} />
+      <ProfileForm
+        profile={profile}
+        avatarImageUrl={
+          profile.avatar_image_path
+            ? imageProxyPath('avatars', profile.avatar_image_path)
+            : null
+        }
+      />
 
       <GenresField
         allGenres={allGenres}

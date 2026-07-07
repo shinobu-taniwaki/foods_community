@@ -14,8 +14,6 @@ import {
   IMAGE_PURPOSES,
   detectImageType,
   imageProxyPath,
-  isImagePurpose,
-  isOwnedPath,
 } from '@/lib/storage';
 import { ok, err, type Result } from '@/lib/result';
 
@@ -227,57 +225,65 @@ export async function updateProductGenres(
 }
 
 // ============================================================
-// 画像アップロード確認（§9.2）マジックバイト検証 → 署名付き read URL
+// アバター画像アップロード（§3.6 / single-domain-image-proxy.md §4）
+// ブラウザは Supabase に直接アクセスできない（単一ドメイン構成）ため、
+// 圧縮済み画像を FormData で受け取り、サーバー側で検証して Storage へ置く。
 // ============================================================
-export async function confirmImageUpload(
-  storagePath: string,
-  purpose: string,
+export async function uploadAvatarImage(
+  formData: FormData,
 ): Promise<Result<{ imageUrl: string }>> {
   const profile = await requireMember();
-  if (!isImagePurpose(purpose)) return err('VALIDATION_FAILED');
-  if (!isOwnedPath(storagePath, profile.id)) return err('INVALID_FILE_PATH');
 
-  const { bucket } = IMAGE_PURPOSES[purpose];
+  const file = formData.get('file');
+  if (!(file instanceof File)) return err('VALIDATION_FAILED');
+  if (file.size > IMAGE_PURPOSES.avatar.maxBytes) return err('FILE_TOO_LARGE');
+
+  // マジックバイト検証（拡張子・Content-Type 偽装対策）
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (detectImageType(bytes) === null) return err('INVALID_FILE_TYPE');
+
+  const storagePath = `${profile.id}/avatar-${Date.now()}.jpg`;
   const supabase = createClient();
-
-  const { data: blob, error: dlError } = await supabase.storage
-    .from(bucket)
-    .download(storagePath);
-  if (dlError || !blob) return err('NOT_FOUND');
-
-  const head = new Uint8Array(await blob.slice(0, 16).arrayBuffer());
-  if (detectImageType(head) === null) {
-    await supabase.storage.from(bucket).remove([storagePath]);
-    return err('INVALID_FILE_TYPE');
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(storagePath, bytes, { contentType: 'image/jpeg', upsert: false });
+  if (uploadError) {
+    return err('INTERNAL', undefined, { cause: uploadError.message });
   }
 
-  // 署名URLは使わず、アプリ経由のプロキシパスを返す（単一ドメイン化・署名URL全廃）
-  return ok({ imageUrl: imageProxyPath(bucket, storagePath) });
-}
-
-// ============================================================
-// アバター画像設定（§3.6）確認 → profiles 更新 → 旧画像削除
-// ============================================================
-export async function setAvatarImage(
-  storagePath: string,
-): Promise<Result<{ imageUrl: string }>> {
-  const profile = await requireMember();
-  const confirmed = await confirmImageUpload(storagePath, 'avatar');
-  if (!confirmed.ok) return confirmed;
-
-  const supabase = createClient();
   const oldPath = profile.avatar_image_path;
   const { error } = await supabase
     .from('profiles')
     .update({ avatar_image_path: storagePath })
     .eq('id', profile.id);
-  if (error) return err('INTERNAL', undefined, { cause: error.message });
+  if (error) {
+    await supabase.storage.from('avatars').remove([storagePath]);
+    return err('INTERNAL', undefined, { cause: error.message });
+  }
 
   if (oldPath && oldPath !== storagePath) {
     await supabase.storage.from('avatars').remove([oldPath]);
   }
   revalidateProfile();
-  return ok(confirmed.data);
+  return ok({ imageUrl: imageProxyPath('avatars', storagePath) });
+}
+
+/** アバター画像を外して絵文字アイコンに戻す。 */
+export async function removeAvatarImage(): Promise<Result<null>> {
+  const profile = await requireMember();
+  const oldPath = profile.avatar_image_path;
+  if (!oldPath) return ok(null);
+
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('profiles')
+    .update({ avatar_image_path: null })
+    .eq('id', profile.id);
+  if (error) return err('INTERNAL', undefined, { cause: error.message });
+
+  await supabase.storage.from('avatars').remove([oldPath]);
+  revalidateProfile();
+  return ok(null);
 }
 
 // ============================================================
