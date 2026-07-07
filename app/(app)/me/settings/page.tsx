@@ -8,7 +8,13 @@ import { signOut } from '../actions';
 
 export const metadata: Metadata = { title: '設定' };
 
-const ITEMS: { href: string; label: string; ready: boolean }[] = [
+interface SettingsItem {
+  href: string;
+  label: string;
+  ready: boolean;
+}
+
+const COMMON_ITEMS: SettingsItem[] = [
   { href: '/me/settings/profile', label: 'プロフィール編集', ready: true },
   {
     href: '/me/settings/account',
@@ -16,19 +22,31 @@ const ITEMS: { href: string; label: string; ready: boolean }[] = [
     ready: true,
   },
   { href: '/me/settings/notifications', label: '通知設定', ready: true },
+];
+
+// プラン・退会は member のみ（admin にプラン概念はなく、自己退会もできない）
+const MEMBER_ITEMS: SettingsItem[] = [
   { href: '/me/settings/plan', label: 'プラン', ready: true },
   { href: '/me/settings/danger', label: '退会', ready: true },
 ];
 
+const ADMIN_ITEMS: SettingsItem[] = [
+  { href: '/admin', label: '管理画面', ready: true },
+];
+
 export default async function SettingsPage() {
-  await requireMember();
+  const profile = await requireMember();
+  const isAdmin = profile.role === 'admin';
+  const items = isAdmin
+    ? [...ADMIN_ITEMS, ...COMMON_ITEMS]
+    : [...COMMON_ITEMS, ...MEMBER_ITEMS];
 
   return (
     <div className="space-y-6">
       <Heading level={1}>設定</Heading>
 
       <Card className="divide-y divide-foreground/10 p-0">
-        {ITEMS.map((item) =>
+        {items.map((item) =>
           item.ready ? (
             <Link
               key={item.href}

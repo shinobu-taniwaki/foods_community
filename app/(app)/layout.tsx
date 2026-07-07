@@ -22,7 +22,11 @@ export default async function AppLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <BetaBanner />
-      <AppHeader avatar={profile.avatar} unreadCount={unreadCount} />
+      <AppHeader
+        avatar={profile.avatar}
+        isAdmin={profile.role === 'admin'}
+        unreadCount={unreadCount}
+      />
       <InstallPrompt />
       <main className="mx-auto w-full max-w-column flex-1 px-4 py-5">
         {children}
