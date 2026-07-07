@@ -87,6 +87,7 @@ pnpm dev            # 開発サーバー（http://localhost:3000）
 pnpm build          # 本番ビルド（standalone）
 pnpm lint           # ESLint
 pnpm typecheck      # tsc --noEmit
+pnpm test           # vitest（lib/ の重要ロジックのユニットテスト）
 pnpm format         # Prettier
 
 pnpm db:start       # ローカル Supabase 起動（ポート 54421/54422）
