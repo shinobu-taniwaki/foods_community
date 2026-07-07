@@ -12,6 +12,15 @@
 - GitHub Actions の Deploy workflow は **secrets/vars 未設定のため未使用**（SSH_HOST/SSH_USER/SSH_KEY/ANON key + DEPLOY_ENABLED=true を登録すれば CI デプロイに移行可能）。
 - 備考: 本番には既にメンバーの投稿5件・お知らせ2件・admin 自作の「MEO対策」チャンネルが存在（この12日間で実利用が始まっている）。
 
+**ロールバック手順（問題発生時）**:
+```bash
+ssh hariki@27.133.240.132
+cd /home/hariki/mcc
+MCC_APP_IMAGE=mcc-app:previous docker compose -f docker-compose.deploy.yml --env-file .env.production up -d
+ss -tlnp | grep 127.0.0.1:3000   # 待受確認
+```
+※ DB マイグレーション2本（plan_changed / posts バケット）は後方互換のため、アプリだけ戻しても DB の切り戻しは不要。
+
 ### admin アカウント（2026-06-23 作成）
 - `henobu@gmail.com` / role=admin / plan=NULL（※`profiles_admin_has_no_plan` 制約＝adminはプラン無し）/ status=active / email確認済み。
 - 認証: **メール+PW のみ有効**（パスワードはユーザー設定・本ドキュメントには非記載）。サーバー側でログイン認証(access_token発行)まで検証済み。
