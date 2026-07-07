@@ -7,11 +7,12 @@ import { createClient } from '@/lib/supabase/server';
 import { requireMember } from '@/lib/auth';
 import { getChannel } from '@/lib/channels';
 import { IMAGE_PURPOSES, detectImageType } from '@/lib/storage';
+import { compressImageServer } from '@/lib/image-compression-server';
 import { viewerRank, isStandardOrHigher, PLAN_RANK } from '@/lib/plans';
 import { normalizeTagSlug } from '@/lib/tags';
 import { parseYoutubeUrl } from '@/lib/youtube';
 import { zodFieldErrors } from '@/lib/validation/common';
-import { ok, err, type Result } from '@/lib/result';
+import { ok, err, getErrorMessage, type Result } from '@/lib/result';
 import { writeAuditLog } from '@/lib/audit';
 import {
   notifyNewPost,
@@ -163,14 +164,26 @@ export async function createPost(
     });
   }
 
-  // 添付画像: posts バケットへアップロード → post_attachments に登録
+  // 添付画像: サーバー側で必ず再圧縮（リサイズ・容量削減・EXIF除去）してから
+  // posts バケットへアップロード → post_attachments に登録
   // （検証済み。個別の失敗は投稿全体を巻き込まずログに残す）
   const imageOffset = video ? 1 : 0;
   for (const [index, image] of validatedImages.data.entries()) {
     const storagePath = `${profile.id}/post-${post.id}-${index}.jpg`;
+    let compressed: Uint8Array;
+    try {
+      compressed = await compressImageServer(image.bytes, 'post');
+    } catch (cause: unknown) {
+      console.error('[post-image] サーバー圧縮失敗', {
+        postId: post.id,
+        index,
+        error: getErrorMessage(cause),
+      });
+      continue;
+    }
     const { error: uploadError } = await supabase.storage
       .from('posts')
-      .upload(storagePath, image.bytes, {
+      .upload(storagePath, compressed, {
         contentType: 'image/jpeg',
         upsert: false,
       });
