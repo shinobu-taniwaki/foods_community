@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useFormState } from 'react-dom';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -59,6 +60,12 @@ export function LoginForm() {
           >
             パスワードなしでログイン（メールでリンクを受け取る）
           </button>
+          <Link
+            href="/login/reset"
+            className="block w-full text-center text-sm text-navy underline"
+          >
+            パスワードをお忘れの方
+          </Link>
         </form>
       )}
 
