@@ -1,63 +1,62 @@
+import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { Container } from '@/components/ui/container';
 import { Card } from '@/components/ui/card';
 import { Heading } from '@/components/ui/heading';
 import { LinkButton } from '@/components/ui/link-button';
+import { BrandLogo } from '@/components/layout/brand-logo';
+import { getMyProfile } from '@/lib/auth';
 
-const BRAND_COLORS = [
-  { name: 'クリーム', value: '#faf5ed', className: 'bg-cream' },
-  { name: 'テラコッタ', value: '#c05e3f', className: 'bg-terracotta' },
-  { name: 'マスタード', value: '#d9a43d', className: 'bg-mustard' },
-  { name: 'オリーブ', value: '#5a6b42', className: 'bg-olive' },
-] as const;
+/**
+ * トップページ（PWA の start_url）。
+ * ログイン済みの会員はお知らせへ、それ以外は簡潔なランディングを表示する。
+ */
+export default async function Home() {
+  const profile = await getMyProfile();
+  if (profile && profile.status === 'active') {
+    redirect('/announcements');
+  }
 
-export default function Home() {
   return (
-    <main className="min-h-screen py-10">
+    <main className="flex min-h-screen items-center py-10">
       <Container className="space-y-6">
-        <header className="space-y-2 text-center">
-          <p className="text-sm text-olive">食品生産者のためのコミュニティ</p>
-          <Heading level={1} className="text-terracotta">
-            マーケティングCampコミュニティ
-          </Heading>
-          <p className="text-foreground/70">MCC — MVP v0.1（Phase 0 構築中）</p>
+        <header className="space-y-4 text-center">
+          <div className="flex justify-center">
+            <BrandLogo width={200} priority className="h-14 w-auto" />
+          </div>
+          <p className="text-base text-foreground/70">
+            食品生産者・職人のための、マーケティングを学び合うコミュニティ
+          </p>
         </header>
 
-        <Card className="space-y-4">
-          <Heading level={2}>セットアップ確認</Heading>
-          <p className="text-foreground/80">
-            Next.js 14（App Router）+ Tailwind + Self-hosted Supabase
-            のスキャフォールドが起動しています。
+        <Card className="space-y-4 text-center">
+          <Heading level={2}>ようこそ</Heading>
+          <p className="text-base leading-relaxed text-foreground/80">
+            仲間の取り組みから学び、自分の挑戦を共有しながら、
+            「売る力」を一緒に育てていく場所です。
           </p>
-          <div className="flex flex-wrap gap-3">
-            <LinkButton href="/login">ログイン</LinkButton>
-            <LinkButton href="/health" variant="ghost">
-              システム状態を確認
-            </LinkButton>
-          </div>
+          <LinkButton href="/login" size="lg" className="w-full">
+            ログイン
+          </LinkButton>
           <p className="text-sm text-foreground/60">
             アカウントは招待制です。招待メールのリンクからご登録ください。
           </p>
         </Card>
 
-        <Card className="space-y-4">
-          <Heading level={3}>ブランドカラー（§1.1）</Heading>
-          <ul className="grid grid-cols-2 gap-3">
-            {BRAND_COLORS.map((c) => (
-              <li key={c.name} className="flex items-center gap-3">
-                <span
-                  className={`${c.className} h-10 w-10 rounded border border-foreground/10`}
-                  aria-hidden
-                />
-                <span>
-                  <span className="block font-medium">{c.name}</span>
-                  <span className="block text-sm text-foreground/60">
-                    {c.value}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Card>
+        <nav
+          aria-label="法的情報"
+          className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-foreground/50"
+        >
+          <Link href="/legal/terms" className="underline">
+            利用規約
+          </Link>
+          <Link href="/legal/privacy" className="underline">
+            プライバシーポリシー
+          </Link>
+          <Link href="/legal/commerce" className="underline">
+            特定商取引法に基づく表記
+          </Link>
+        </nav>
       </Container>
     </main>
   );

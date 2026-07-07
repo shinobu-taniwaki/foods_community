@@ -10,10 +10,15 @@ import {
  * - Magic Link / Google ログイン: code をセッションに交換し /announcements へ。
  * - 招待（invite_token あり）: 招待メールと認証メールの一致を厳密検証し profiles 作成。
  */
+/** 認証後の遷移先として許可する next の値（オープンリダイレクト防止のホワイトリスト）。 */
+const ALLOWED_NEXT_PATHS = ['/reset-password'] as const;
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
   const inviteToken = searchParams.get('invite_token');
+  const nextParam = searchParams.get('next');
+  const nextPath = ALLOWED_NEXT_PATHS.find((p) => p === nextParam) ?? null;
 
   const redirectTo = (path: string) =>
     NextResponse.redirect(`${origin}${path}`);
@@ -65,11 +70,15 @@ export async function GET(request: NextRequest) {
     return redirectTo('/announcements');
   }
 
-  // --- 通常ログイン（Magic Link / 連携済み Google）---
+  // --- 通常ログイン（Magic Link / 連携済み Google / パスワード再設定）---
   if (!profile) {
     // 招待なしでアカウントが無い → 入室不可
     await supabase.auth.signOut();
     return redirectTo('/login?error=no_account');
+  }
+  // パスワード再設定リンク（recovery）は active なら新パスワード設定ページへ
+  if (nextPath && profile.status === 'active') {
+    return redirectTo(nextPath);
   }
   return routeByStatus(profile.status, redirectTo);
 }

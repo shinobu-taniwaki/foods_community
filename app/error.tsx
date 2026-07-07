@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { Button } from '@/components/ui/button';
 
 interface ErrorPageProps {
@@ -10,10 +11,11 @@ interface ErrorPageProps {
 
 /**
  * 500 エラー画面（dev-phases §3.5.10）。
- * エラー監視（Sentry）は DSN 取得後に captureException をここへ接続する。
+ * Sentry は DSN 設定時のみ有効（未設定なら captureException は no-op）。
  */
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error('[app-error]', { message: error.message, digest: error.digest });
   }, [error]);
 
