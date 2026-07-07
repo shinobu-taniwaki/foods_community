@@ -1,7 +1,16 @@
 # MCC オンプレデプロイ 作業状況
 
-**最終更新**: 2026-06-23
-**現在地**: Task #2〜6 完了（「一旦デプロイ」一式＝Supabase＋アプリ稼働・admin作成・実機確認・永続化/バックアップ） → **本番公開フェーズ（DNS/SSL→再ビルド→Google SSO）が次**
+**最終更新**: 2026-07-07
+**現在地**: **本番稼働中（main 53804c3 = Phase 5 全機能 + UI修正 + 画像添付/必須圧縮）** → 残りは Resend キー・Google フォーム・法務文面・Google SSO・Plausible/Sentry の外部依存のみ
+
+### 2026-07-07 デプロイ記録（Phase 5 以降の全成果を本番反映）
+- DNS/SSL は設定済みを確認（marketing-camp.jp / Let's Encrypt 〜2026-09-20。**certbot 自動更新の有無は管理者に要確認**）。
+- 本番 DB へマイグレーション2本適用: `20260702100000_plan_changed_notification` / `20260707120000_posts_bucket`（適用前に制約・バケット不存在を確認、適用後に検証済み）。
+- runbook 方式（ローカル amd64 ビルド 251MB → scp → load）でデプロイ。**`mcc-app:previous` にロールバック用の旧イメージを退避済み**。
+- HTTPS スモーク 5 点合格（新ランディング・特商法・PWリセット導線・404）。
+- 初期コンテンツ seed 投入（ウェルカム投稿+ガイド3+FAQ5）・lecture チャンネル作成。
+- GitHub Actions の Deploy workflow は **secrets/vars 未設定のため未使用**（SSH_HOST/SSH_USER/SSH_KEY/ANON key + DEPLOY_ENABLED=true を登録すれば CI デプロイに移行可能）。
+- 備考: 本番には既にメンバーの投稿5件・お知らせ2件・admin 自作の「MEO対策」チャンネルが存在（この12日間で実利用が始まっている）。
 
 ### admin アカウント（2026-06-23 作成）
 - `henobu@gmail.com` / role=admin / plan=NULL（※`profiles_admin_has_no_plan` 制約＝adminはプラン無し）/ status=active / email確認済み。
