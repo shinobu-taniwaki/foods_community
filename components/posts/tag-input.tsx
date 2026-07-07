@@ -26,6 +26,8 @@ export function TagInput({ name, defaultTags = [], max = 5 }: TagInputProps) {
   };
 
   const onKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    // 日本語 IME の変換確定 Enter ではタグを確定しない
+    if (e.nativeEvent.isComposing) return;
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
       add(draft);

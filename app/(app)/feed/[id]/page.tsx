@@ -121,7 +121,7 @@ export default async function PostDetailPage({
         </div>
       </div>
 
-      <div className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
+      <div className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground/90">
         {post.content}
       </div>
 

@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 
 /**
  * ネットワーク切断時の「圏外」バナー（dev-phases §3.5.10）。
- * online/offline イベントで自動表示・自動解除。
+ * offline/online イベントの遷移時のみ表示・解除する。
+ * navigator.onLine の初期値は VPN・仮想アダプタ環境で false を誤報する
+ * ことがある（実機で確認）ため、マウント時のチェックは行わない。
  */
 export function OfflineBanner() {
   const [isOffline, setIsOffline] = useState(false);
 
   useEffect(() => {
-    setIsOffline(!window.navigator.onLine);
     const goOffline = () => setIsOffline(true);
     const goOnline = () => setIsOffline(false);
     window.addEventListener('offline', goOffline);

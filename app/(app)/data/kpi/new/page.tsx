@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { Heading } from '@/components/ui/heading';
 import { KpiForm } from '@/components/data/kpi-form';
 import { createKpiReport } from '../../actions';
+import { currentMonthJst } from '@/lib/dates';
 
 export const metadata: Metadata = { title: 'KPI改善を追加' };
 
 export default function NewKpiPage() {
-  const month = new Date().toISOString().slice(0, 7);
+  const month = currentMonthJst();
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">

@@ -3,11 +3,12 @@ import Link from 'next/link';
 import { Heading } from '@/components/ui/heading';
 import { CpaForm } from '@/components/data/cpa-form';
 import { createCpaReport } from '../../actions';
+import { currentMonthJst } from '@/lib/dates';
 
 export const metadata: Metadata = { title: '施策CPAを追加' };
 
 export default function NewCpaPage() {
-  const month = new Date().toISOString().slice(0, 7);
+  const month = currentMonthJst();
   return (
     <div className="space-y-5">
       <div className="flex items-center justify-between">

@@ -73,14 +73,30 @@ export function MemberActions({ userId, currentPlan, status }: MemberActionsProp
             <Button
               variant="secondary"
               disabled={pending}
-              onClick={() => run(() => adminSuspendMember(userId, '1_week'), '1週間停止しました')}
+              onClick={() => {
+                if (
+                  !confirm(
+                    'このメンバーを1週間停止します。停止中はログインできず、本人に通知とメールが送られます。よろしいですか？',
+                  )
+                )
+                  return;
+                run(() => adminSuspendMember(userId, '1_week'), '1週間停止しました');
+              }}
             >
               1週間停止
             </Button>
             <Button
               variant="secondary"
               disabled={pending}
-              onClick={() => run(() => adminSuspendMember(userId, '1_month'), '1ヶ月停止しました')}
+              onClick={() => {
+                if (
+                  !confirm(
+                    'このメンバーを1ヶ月停止します。停止中はログインできず、本人に通知とメールが送られます。よろしいですか？',
+                  )
+                )
+                  return;
+                run(() => adminSuspendMember(userId, '1_month'), '1ヶ月停止しました');
+              }}
             >
               1ヶ月停止
             </Button>
@@ -89,7 +105,14 @@ export function MemberActions({ userId, currentPlan, status }: MemberActionsProp
               disabled={pending}
               onClick={() => {
                 const reason = prompt('退会理由を入力してください');
-                if (reason) run(() => adminDeleteMember(userId, reason), '退会させました');
+                if (!reason) return;
+                if (
+                  !confirm(
+                    `本当に退会させますか？\n退会後はログインできなくなり、本人に通知とメールが送られます。\n\n理由: ${reason}`,
+                  )
+                )
+                  return;
+                run(() => adminDeleteMember(userId, reason), '退会させました');
               }}
             >
               退会させる
