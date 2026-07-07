@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert } from '@/components/ui/alert';
 import { SubmitButton } from '@/components/ui/submit-button';
 import { TagInput } from '@/components/posts/tag-input';
+import { PostImagePicker } from '@/components/posts/post-image-picker';
 import type { Result } from '@/lib/result';
 
 interface ChannelOption {
@@ -103,6 +104,13 @@ export function PostForm({
           <Label>タグ（最大5個）</Label>
           <TagInput name="tagLabels" defaultTags={defaultValues?.tags} />
         </div>
+
+        {mode === 'create' && (
+          <div>
+            <Label>写真（任意・3枚まで）</Label>
+            <PostImagePicker name="images" />
+          </div>
+        )}
 
         {isAdmin && (
           <div>

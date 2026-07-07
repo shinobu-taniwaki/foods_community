@@ -35,6 +35,7 @@ export interface PostListItem {
   commentCount: number;
   likedByMe: boolean;
   hasVideo: boolean;
+  hasImage: boolean;
 }
 
 const TRIAL_RANK = 0;
@@ -125,6 +126,9 @@ export async function listPosts(params: {
     const hasVideo = (row.post_attachments ?? []).some(
       (a) => a.attachment_type === 'video_embed',
     );
+    const hasImage = (row.post_attachments ?? []).some(
+      (a) => a.attachment_type === 'image',
+    );
     return {
       id: row.id,
       channel: channel
@@ -146,6 +150,7 @@ export async function listPosts(params: {
       commentCount: (row.post_comments as CountAgg)[0]?.count ?? 0,
       likedByMe: likedSet.has(row.id),
       hasVideo,
+      hasImage,
     };
   });
 

@@ -47,11 +47,16 @@ export function PostCard({ post }: { post: PostListItem }) {
           {post.contentExcerpt}
         </p>
 
-        {(post.tags.length > 0 || post.hasVideo) && (
+        {(post.tags.length > 0 || post.hasVideo || post.hasImage) && (
           <div className="flex flex-wrap items-center gap-1">
             {post.hasVideo && (
               <span className="text-sm" aria-label="動画あり">
                 🎬
+              </span>
+            )}
+            {post.hasImage && (
+              <span className="text-sm" aria-label="写真あり">
+                📷
               </span>
             )}
             {post.tags.map((t) => (
