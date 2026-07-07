@@ -9,6 +9,7 @@ import { createClient } from '@/lib/supabase/server';
 import { imageProxyPath } from '@/lib/storage';
 import { isStandardOrHigher } from '@/lib/plans';
 import { YoutubeEmbed } from '@/components/youtube-embed';
+import { AdminBadge } from '@/components/posts/admin-badge';
 import { PostLikeButton } from '@/components/posts/post-like-button';
 import { PostCommentForm } from '@/components/posts/post-comment-form';
 import { PostCommentItem } from '@/components/posts/post-comment-item';
@@ -21,6 +22,7 @@ type AuthorEmbed = {
   display_name: string;
   avatar: string;
   status: string;
+  role: string;
 } | null;
 type ChannelEmbed = { id: string; label: string; color: string } | null;
 
@@ -37,7 +39,7 @@ export default async function PostDetailPage({
     .select(
       `id, title, content, created_at, last_edited_at, edited_by_admin, author_id,
        channel:channels!posts_channel_id_fkey(id, label, color),
-       author:profiles!posts_author_id_fkey(id, display_name, avatar, status),
+       author:profiles!posts_author_id_fkey(id, display_name, avatar, status, role),
        post_tag_assignments(post_tags(id, label, slug)),
        post_attachments(id, attachment_type, storage_path, video_id, caption, display_order)`,
     )
@@ -52,6 +54,7 @@ export default async function PostDetailPage({
   const isMine = post.author_id === profile.id;
   const isAdmin = profile.role === 'admin';
   const authorActive = author?.status === 'active';
+  const authorIsAdmin = authorActive && author?.role === 'admin';
 
   const tags = (post.post_tag_assignments ?? [])
     .map((a) => a.post_tags)
@@ -75,7 +78,7 @@ export default async function PostDetailPage({
         .from('post_comments')
         .select(
           `id, body, created_at,
-           author:profiles!post_comments_author_id_fkey(id, display_name, avatar, status)`,
+           author:profiles!post_comments_author_id_fkey(id, display_name, avatar, status, role)`,
         )
         .eq('post_id', post.id)
         .is('deleted_at', null)
@@ -106,9 +109,10 @@ export default async function PostDetailPage({
         <Heading level={1}>{post.title}</Heading>
         <div className="flex items-center gap-2 text-sm text-foreground/50">
           <span>
-            {authorActive ? author?.avatar : '👤'}{' '}
+            {authorActive ? (authorIsAdmin ? '📢' : author?.avatar) : '👤'}{' '}
             {authorActive ? author?.display_name : '（退会したメンバー）'}
           </span>
+          {authorIsAdmin && <AdminBadge />}
           <time>{new Date(post.created_at).toLocaleDateString('ja-JP')}</time>
           {post.edited_by_admin && <span>※運営により編集</span>}
           {!post.edited_by_admin && post.last_edited_at && (
@@ -208,6 +212,7 @@ export default async function PostDetailPage({
                         : (ca?.display_name ?? 'メンバー')
                     }
                     authorAvatar={deleted ? '👤' : (ca?.avatar ?? '👤')}
+                    isAdminAuthor={!deleted && ca?.role === 'admin'}
                     body={c.body}
                     createdAt={c.created_at}
                     canDelete={ca?.id === profile.id || isAdmin}

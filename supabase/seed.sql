@@ -48,5 +48,6 @@ INSERT INTO public.channels (id, label, description, icon_emoji, color, required
   ('kpi',          'KPI改善',           '数値で測れる改善の事例を共有するチャンネル', '📈', '#5a6b42', 'trial',    false, 5,    10, true),
   ('sales',        '売上UP',            '売上が伸びた施策・工夫を共有するチャンネル', '💰', '#d9a43d', 'trial',    false, 5,    20, true),
   ('customer',     '集客',              '新規・リピート集客の知見を共有するチャンネル', '🧲', '#c05e3f', 'trial',    false, 5,    30, true),
-  ('admin_advice', '運営からのアドバイス', '運営から会員へのアドバイス専用チャンネル',    '🎓', '#3f5a6b', 'standard', true,  NULL, 40, true)
+  ('admin_advice', '運営からのアドバイス', '運営から会員へのアドバイス専用チャンネル',    '🎓', '#3f5a6b', 'standard', true,  NULL, 40, true),
+  ('lecture',      'レクチャー記事・動画', '運営が配信するレクチャー記事・動画のチャンネル', '🎥', '#c05e3f', 'standard', true,  NULL, 50, true)
 ON CONFLICT (id) DO NOTHING;

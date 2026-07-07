@@ -2,12 +2,14 @@
 
 import { useTransition } from 'react';
 import { deletePostComment } from '@/app/(app)/feed/actions';
+import { AdminBadge } from '@/components/posts/admin-badge';
 
 export function PostCommentItem({
   commentId,
   postId,
   authorName,
   authorAvatar,
+  isAdminAuthor = false,
   body,
   createdAt,
   canDelete,
@@ -16,6 +18,8 @@ export function PostCommentItem({
   postId: string;
   authorName: string;
   authorAvatar: string;
+  /** 運営（admin）によるコメントか。バッジ表示に使う。 */
+  isAdminAuthor?: boolean;
   body: string;
   createdAt: string;
   canDelete: boolean;
@@ -25,11 +29,14 @@ export function PostCommentItem({
   return (
     <li className="flex gap-3 border-b border-foreground/10 py-3 last:border-0">
       <span className="text-xl" aria-hidden>
-        {authorAvatar}
+        {isAdminAuthor ? '📢' : authorAvatar}
       </span>
       <div className="flex-1">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">{authorName}</span>
+          <span className="flex items-center gap-2 text-sm font-medium">
+            {authorName}
+            {isAdminAuthor && <AdminBadge />}
+          </span>
           <time className="text-xs text-foreground/40">
             {new Date(createdAt).toLocaleDateString('ja-JP')}
           </time>
