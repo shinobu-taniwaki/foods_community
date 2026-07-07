@@ -31,6 +31,41 @@ export default async function MyPage() {
         </Link>
       </div>
 
+      {profile.role === 'admin' && (
+        <Card className="space-y-3 border-navy/30">
+          <Heading level={3} className="text-navy">
+            運営メニュー
+          </Heading>
+          <LinkButton
+            href="/admin"
+            size="lg"
+            className="w-full bg-navy text-cream hover:bg-navy/90"
+          >
+            管理画面を開く
+          </LinkButton>
+          <div className="grid grid-cols-3 gap-2">
+            <Link
+              href="/admin/announcements/new"
+              className="flex min-h-[48px] items-center justify-center rounded bg-navy/5 px-2 text-center text-sm hover:bg-navy/10"
+            >
+              お知らせ
+            </Link>
+            <Link
+              href="/admin/broadcasts"
+              className="flex min-h-[48px] items-center justify-center rounded bg-navy/5 px-2 text-center text-sm hover:bg-navy/10"
+            >
+              全体通知
+            </Link>
+            <Link
+              href="/admin/members"
+              className="flex min-h-[48px] items-center justify-center rounded bg-navy/5 px-2 text-center text-sm hover:bg-navy/10"
+            >
+              メンバー
+            </Link>
+          </div>
+        </Card>
+      )}
+
       <Card className="space-y-4">
         <div className="flex items-center gap-4">
           {avatarUrl ? (
