@@ -6,6 +6,13 @@ const nextConfig = {
   // オンプレ Docker デプロイ向けに最小ランタイムを出力する
   output: 'standalone',
   poweredByHeader: false,
+  experimental: {
+    serverActions: {
+      // 投稿画像（圧縮後 最大3枚 × ~1.5MB）を FormData で受けるため引き上げ
+      // （Nginx 側の client_max_body_size は 10M）
+      bodySizeLimit: '8mb',
+    },
+  },
   images: {
     // Supabase Storage / YouTube サムネイルを許可
     remotePatterns: [

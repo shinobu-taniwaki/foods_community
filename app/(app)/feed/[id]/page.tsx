@@ -85,7 +85,7 @@ export default async function PostDetailPage({
         .order('created_at', { ascending: true }),
     ]);
 
-  // 添付を表示順にソート（画像はアプリ経由 /api/img で配信。投稿画像は将来 posts バケットへ）
+  // 添付を表示順にソート（画像は posts バケットからアプリ経由 /api/img で配信）
   const attachments = [...(post.post_attachments ?? [])].sort(
     (a, b) => a.display_order - b.display_order,
   );
@@ -138,7 +138,7 @@ export default async function PostDetailPage({
               );
             }
             const url = a.storage_path
-              ? imageProxyPath('contents', a.storage_path)
+              ? imageProxyPath('posts', a.storage_path)
               : null;
             if (!url) return null;
             return (

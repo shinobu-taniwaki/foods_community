@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { requireMember } from '@/lib/auth';
 import { getChannel } from '@/lib/channels';
+import { IMAGE_PURPOSES, detectImageType } from '@/lib/storage';
 import { viewerRank, isStandardOrHigher, PLAN_RANK } from '@/lib/plans';
 import { normalizeTagSlug } from '@/lib/tags';
 import { parseYoutubeUrl } from '@/lib/youtube';
@@ -20,6 +21,38 @@ import {
 } from '@/lib/notifications/dispatch';
 
 const uuid = z.string().uuid();
+
+/** 投稿に添付できる画像の上限枚数（設計書 §11）。 */
+const POST_IMAGE_MAX = 3;
+
+interface ValidatedImage {
+  bytes: Uint8Array;
+}
+
+/**
+ * FormData の添付画像を検証して返す（枚数・サイズ・マジックバイト）。
+ * 不正があれば Result のエラーを返す。
+ */
+async function validatePostImages(
+  formData: FormData,
+): Promise<Result<ValidatedImage[]>> {
+  const files = formData
+    .getAll('images')
+    .filter((f): f is File => f instanceof File && f.size > 0);
+
+  if (files.length > POST_IMAGE_MAX) {
+    return err('TOO_MANY_ATTACHMENTS', `画像は${POST_IMAGE_MAX}枚までです。`);
+  }
+
+  const images: ValidatedImage[] = [];
+  for (const file of files) {
+    if (file.size > IMAGE_PURPOSES.post.maxBytes) return err('FILE_TOO_LARGE');
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    if (detectImageType(bytes) === null) return err('INVALID_FILE_TYPE');
+    images.push({ bytes });
+  }
+  return ok(images);
+}
 
 const postSchema = z.object({
   channelId: z.string().min(1),
@@ -89,6 +122,10 @@ export async function createPost(
     video = { videoId: info.videoId, thumbnailUrl: info.thumbnailUrl };
   }
 
+  // 添付画像の検証は投稿 INSERT より前に行う（不正画像で中途半端な投稿を作らない）
+  const validatedImages = await validatePostImages(formData);
+  if (!validatedImages.ok) return validatedImages;
+
   const supabase = createClient();
   const { data: post, error } = await supabase
     .from('posts')
@@ -124,6 +161,43 @@ export async function createPost(
       thumbnail_url: video.thumbnailUrl,
       display_order: 0,
     });
+  }
+
+  // 添付画像: posts バケットへアップロード → post_attachments に登録
+  // （検証済み。個別の失敗は投稿全体を巻き込まずログに残す）
+  const imageOffset = video ? 1 : 0;
+  for (const [index, image] of validatedImages.data.entries()) {
+    const storagePath = `${profile.id}/post-${post.id}-${index}.jpg`;
+    const { error: uploadError } = await supabase.storage
+      .from('posts')
+      .upload(storagePath, image.bytes, {
+        contentType: 'image/jpeg',
+        upsert: false,
+      });
+    if (uploadError) {
+      console.error('[post-image] アップロード失敗', {
+        postId: post.id,
+        index,
+        error: uploadError.message,
+      });
+      continue;
+    }
+    const { error: attachError } = await supabase
+      .from('post_attachments')
+      .insert({
+        post_id: post.id,
+        attachment_type: 'image',
+        storage_path: storagePath,
+        display_order: imageOffset + index,
+      });
+    if (attachError) {
+      console.error('[post-image] 添付登録失敗', {
+        postId: post.id,
+        index,
+        error: attachError.message,
+      });
+      await supabase.storage.from('posts').remove([storagePath]);
+    }
   }
 
   await notifyNewPost({

@@ -1,10 +1,11 @@
 import 'server-only';
 
-/** 画像用途 → バケット・サイズ上限（api-endpoints.md §9.1）。Phase 1 は avatar/store/announcement。 */
+/** 画像用途 → バケット・サイズ上限（api-endpoints.md §9.1）。 */
 export const IMAGE_PURPOSES = {
   avatar: { bucket: 'avatars', maxBytes: 512_000 },
   store: { bucket: 'stores', maxBytes: 1_572_864 },
   announcement: { bucket: 'contents', maxBytes: 2_097_152 },
+  post: { bucket: 'posts', maxBytes: 2_097_152 },
 } as const;
 
 export type ImagePurpose = keyof typeof IMAGE_PURPOSES;
@@ -67,7 +68,7 @@ export function isOwnedPath(storagePath: string, userId: string): boolean {
 // ブラウザは Supabase に直接アクセスせず、アプリの /api/img 経由で画像を取得する。
 // これにより外部公開ドメインは marketing-camp.jp の1つで済む（api. サブドメイン不要）。
 // ============================================================
-export const IMAGE_BUCKETS = ['avatars', 'stores', 'contents'] as const;
+export const IMAGE_BUCKETS = ['avatars', 'stores', 'contents', 'posts'] as const;
 export type ImageBucket = (typeof IMAGE_BUCKETS)[number];
 
 export function isImageBucket(value: string): value is ImageBucket {
