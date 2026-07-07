@@ -11,6 +11,8 @@ export interface PostAuthor {
   id: string;
   displayName: string;
   avatar: string;
+  /** 運営（admin）による投稿か。UI で「運営」バッジ・背景色の出し分けに使う。 */
+  isAdmin: boolean;
   genreEmojis: string[];
 }
 
@@ -50,6 +52,7 @@ interface AuthorEmbed {
   display_name: string;
   avatar: string;
   status: string;
+  role: string;
   profile_product_genres: { product_genres: { icon_emoji: string } | null }[];
 }
 
@@ -59,6 +62,7 @@ function mapAuthor(author: AuthorEmbed | null): PostAuthor | null {
     id: author.id,
     displayName: author.display_name,
     avatar: author.avatar,
+    isAdmin: author.role === 'admin',
     genreEmojis: (author.profile_product_genres ?? [])
       .map((g) => g.product_genres?.icon_emoji)
       .filter((e): e is string => Boolean(e)),
@@ -87,7 +91,7 @@ export async function listPosts(params: {
     .select(
       `id, title, content, created_at, last_edited_at, edited_by_admin,
        channel:channels!posts_channel_id_fkey(id, label, icon_emoji, color),
-       author:profiles!posts_author_id_fkey(id, display_name, avatar, status,
+       author:profiles!posts_author_id_fkey(id, display_name, avatar, status, role,
          profile_product_genres(product_genres(icon_emoji))),
        post_tag_assignments(post_tags(id, label, slug)),
        post_attachments(attachment_type),

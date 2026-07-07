@@ -1,16 +1,25 @@
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
+import { AdminBadge } from '@/components/posts/admin-badge';
+import { cn } from '@/lib/utils';
 import type { PostListItem } from '@/lib/posts';
 
-/** 掲示板の投稿カード。 */
+/** 掲示板の投稿カード。運営の投稿はバッジ＋背景色で見分けられるようにする。 */
 export function PostCard({ post }: { post: PostListItem }) {
+  const isAdminPost = post.author?.isAdmin ?? false;
+
   return (
-    <Card className="space-y-2">
+    <Card
+      className={cn(
+        'space-y-2',
+        isAdminPost && 'border-terracotta/40 bg-terracotta/5',
+      )}
+    >
       <Link href={`/feed/${post.id}`} className="block space-y-2">
         <div className="flex items-center gap-2">
           {post.author ? (
             <span className="text-xl" aria-hidden>
-              {post.author.avatar}
+              {isAdminPost ? '📢' : post.author.avatar}
             </span>
           ) : (
             <span className="text-xl" aria-hidden>
@@ -21,11 +30,15 @@ export function PostCard({ post }: { post: PostListItem }) {
             <span className="font-medium text-foreground/80">
               {post.author?.displayName ?? '（退会したメンバー）'}
             </span>
-            {post.author?.genreEmojis.map((e, i) => (
-              <span key={i} aria-hidden>
-                {e}
-              </span>
-            ))}
+            {isAdminPost ? (
+              <AdminBadge />
+            ) : (
+              post.author?.genreEmojis.map((e, i) => (
+                <span key={i} aria-hidden>
+                  {e}
+                </span>
+              ))
+            )}
           </div>
         </div>
 
