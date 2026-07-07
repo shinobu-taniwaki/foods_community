@@ -10,19 +10,21 @@ export function AppFooter() {
   const inquiryUrl = getFormUrl('INQUIRY');
   const bugReportUrl = getFormUrl('BUG_REPORT');
 
+  const linkClassName = 'inline-flex min-h-[44px] items-center underline';
+
   return (
     <footer className="border-t border-foreground/10 bg-cream">
-      <div className="mx-auto max-w-column space-y-3 px-4 py-6 text-sm text-foreground/60">
+      <div className="mx-auto max-w-column space-y-1 px-4 py-5 text-base text-foreground/70">
         <nav
           aria-label="フッターナビゲーション"
-          className="flex flex-wrap gap-x-5 gap-y-2"
+          className="flex flex-wrap items-center gap-x-6"
         >
           {inquiryUrl && (
             <a
               href={inquiryUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className={linkClassName}
             >
               お問い合わせ
             </a>
@@ -32,22 +34,22 @@ export function AppFooter() {
               href={bugReportUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline"
+              className={linkClassName}
             >
               不具合を報告する
             </a>
           )}
-          <Link href="/legal/terms" className="underline">
+          <Link href="/legal/terms" className={linkClassName}>
             利用規約
           </Link>
-          <Link href="/legal/privacy" className="underline">
+          <Link href="/legal/privacy" className={linkClassName}>
             プライバシーポリシー
           </Link>
-          <Link href="/legal/commerce" className="underline">
+          <Link href="/legal/commerce" className={linkClassName}>
             特定商取引法に基づく表記
           </Link>
         </nav>
-        <p className="text-xs text-foreground/40">
+        <p className="text-sm text-foreground/50">
           © マーケティングCampコミュニティ
         </p>
       </div>

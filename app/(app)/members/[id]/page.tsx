@@ -40,7 +40,9 @@ export default async function MemberDetailPage({
             </p>
           </div>
         </div>
-        {member.bio && <p className="text-foreground/80">{member.bio}</p>}
+        {member.bio && (
+          <p className="whitespace-pre-wrap break-words text-foreground/80">{member.bio}</p>
+        )}
         {member.productGenres.length > 0 && (
           <ul className="flex flex-wrap gap-2">
             {member.productGenres.map((g) => (
@@ -66,7 +68,7 @@ export default async function MemberDetailPage({
             </p>
           )}
           {member.storeDescription && (
-            <p className="text-foreground/80">{member.storeDescription}</p>
+            <p className="whitespace-pre-wrap break-words text-foreground/80">{member.storeDescription}</p>
           )}
         </Card>
       )}

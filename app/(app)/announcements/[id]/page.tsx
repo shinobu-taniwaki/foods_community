@@ -108,7 +108,7 @@ export default async function AnnouncementDetailPage({
         </div>
       </div>
 
-      <div className="whitespace-pre-wrap text-base leading-relaxed text-foreground/90">
+      <div className="whitespace-pre-wrap break-words text-base leading-relaxed text-foreground/90">
         {content.body}
       </div>
 

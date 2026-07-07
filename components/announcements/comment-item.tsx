@@ -36,14 +36,14 @@ export function CommentItem({
       <span className="text-xl" aria-hidden>
         {authorAvatar}
       </span>
-      <div className="flex-1">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium">{authorName}</span>
           <time className="text-xs text-foreground/40">
             {new Date(createdAt).toLocaleDateString('ja-JP')}
           </time>
         </div>
-        <p className="whitespace-pre-wrap text-base text-foreground/80">
+        <p className="whitespace-pre-wrap break-words text-base text-foreground/80">
           {body}
         </p>
         {canDelete && (

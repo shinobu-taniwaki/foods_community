@@ -91,7 +91,9 @@ export default async function MyPage() {
             )}
           </div>
         </div>
-        {profile.bio && <p className="text-foreground/80">{profile.bio}</p>}
+        {profile.bio && (
+          <p className="whitespace-pre-wrap break-words text-foreground/80">{profile.bio}</p>
+        )}
         {profile.productGenres.length > 0 && (
           <ul className="flex flex-wrap gap-2">
             {profile.productGenres.map((g) => (
@@ -119,7 +121,7 @@ export default async function MyPage() {
             {profile.product && <Row label="商品" value={profile.product} />}
           </dl>
           {profile.store_description && (
-            <p className="text-foreground/80">{profile.store_description}</p>
+            <p className="whitespace-pre-wrap break-words text-foreground/80">{profile.store_description}</p>
           )}
         </Card>
       )}

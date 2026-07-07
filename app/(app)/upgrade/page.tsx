@@ -31,6 +31,16 @@ export default async function UpgradePage() {
 
   const plans = (data ?? []) as PlanRow[];
 
+  // フォームの「現在のプラン」欄には申込先ではなく現在加入中のプランを渡す
+  const { data: currentPlanRow } = profile.plan
+    ? await supabase
+        .from('plans')
+        .select('label')
+        .eq('id', profile.plan)
+        .maybeSingle()
+    : { data: null };
+  const currentPlanLabel = currentPlanRow?.label ?? profile.plan ?? '';
+
   return (
     <div className="space-y-5">
       <Heading level={1}>プランのご案内</Heading>
@@ -41,11 +51,11 @@ export default async function UpgradePage() {
       <div className="space-y-4">
         {plans.map((plan) => (
           <Card key={plan.id} className="space-y-3">
-            <div className="flex items-baseline justify-between">
+            <div className="space-y-1">
               <Heading level={3}>{plan.label}</Heading>
-              <span className="text-lg font-medium text-terracotta">
+              <p className="text-lg font-medium text-terracotta">
                 {plan.display_price}
-              </span>
+              </p>
             </div>
             <p className="text-base text-foreground/70">{plan.description}</p>
             <ul className="space-y-1 text-base">
@@ -67,7 +77,7 @@ export default async function UpgradePage() {
                 [process.env.NEXT_PUBLIC_FORM_PLAN_ENTRY_EMAIL ?? '']:
                   user?.email ?? undefined,
                 [process.env.NEXT_PUBLIC_FORM_PLAN_ENTRY_CURRENT_PLAN ?? '']:
-                  plan.label,
+                  currentPlanLabel,
               }}
             />
           </Card>

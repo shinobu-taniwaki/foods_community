@@ -104,7 +104,7 @@ export function AcceptForm({ token }: AcceptFormProps) {
         <Button variant="secondary" size="lg" type="submit" className="w-full">
           Google で登録
         </Button>
-        <p className="mt-2 text-center text-xs text-foreground/50">
+        <p className="mt-2 text-center text-base text-foreground/80">
           ※ 招待されたメールアドレスと同じ Google アカウントが必要です
         </p>
       </form>
